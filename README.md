@@ -52,7 +52,7 @@ spec:
   * Using the OpenShift webconsole
   * Using the command line
     * `oc -n myproject get pods -l strimzi.io/cluster=my-cluster -w`
-* Edit the deployment:
+* Edit the Kafka cluster:
   * From the command line do `oc edit kafka my-cluster` and change the following section to enable TLS client authentication and authroization. Change it from:
 
 ```
@@ -70,6 +70,7 @@ to:
           type: tls
     authorization:
       type: simple
+      superUsers: my-connect
 ```
 
 * Watch as the Cluster Operator does a rolling update to reconfigure Kafka
