@@ -1,7 +1,7 @@
 apiVersion: kafka.strimzi.io/v1alpha1
 kind: KafkaConnect
 metadata:
-  name: my-connect-cluster
+  name: my-connect
 spec:
   replicas: 1
   readinessProbe:
@@ -15,3 +15,9 @@ spec:
     trustedCertificates:
       - secretName: my-cluster-cluster-ca-cert
         certificate: ca.crt
+  authentication:
+    type: tls
+    certificateAndKey:
+      secretName: my-connect
+      key: user.key
+      certificate: user.crt

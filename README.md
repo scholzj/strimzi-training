@@ -70,7 +70,6 @@ to:
           type: tls
     authorization:
       type: simple
-      superUsers: my-connect
 ```
 
 * Watch as the Cluster Operator does a rolling update to reconfigure Kafka
@@ -112,3 +111,30 @@ to:
   * Wait for the pod to restart and check it gets an _authorization error_ using `oc logs $(oc get pod -l app=hello-world-producer -o=jsonpath='{.items[0].metadata.name}') -f`
   * Edit the KafkaUser resource with `oc edit kafkauser my-user` and update the access rights to allow it to use the new topic
   * Check the logs again to see how it is now authorized to produce to the new topic
+* Add a new user `my-connect` for Kafka Connect
+  * Edit the `examples/user/kafka-user.yaml` file:
+    * Change the username to `my-connect`
+    * Remove the `authorization` section
+  * Create the user using `oc apply -f examples/user/kafka-user.yaml`
+* Edit the Kafka cluster again:
+  * From the command line do `oc edit kafka my-cluster` and change the following section to add user `CN=my-connect` as a super user. Change it from:
+
+```
+    authorization:
+      type: simple
+```
+
+to:
+
+```
+    authorization:
+      type: simple
+      superUsers:
+        - CN=my-connect
+```
+
+* Wait until the rolling update is finished
+* Open the file `examples/kafka-connect/kafka-connect.yaml`
+  * Notice the configuration related to the authentication
+* Deploy Kafka Connect using `oc apply -f examples/kafka-connect/kafka-connect.yaml`
+* Wait until Kafka Connect starts and check that it connected to the broker and created some topics using `oc get kafkatopics`
