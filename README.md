@@ -1,5 +1,5 @@
 * Checkout this repository which will be used during the lab:
-  * `git clone https://github.com/scholzj/strimzi-support-training.git`
+  * `git clone https://github.com/scholzj/strimzi-training.git`
 * Explore the files in the examples/install/cluster-operator directory: the service account, the RBAC files, the CRD definitions and the Cluster Operator deployment
 * Start you OpenShift cluster
   * You should use OpenShift 3.9 or higher
