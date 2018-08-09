@@ -1,0 +1,68 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: strimzi-cluster-operator
+  labels:
+    app: strimzi
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: strimzi-cluster-operator
+    spec:
+      serviceAccountName: strimzi-cluster-operator
+      containers:
+      - name: strimzi-cluster-operator
+        image: strimzici/cluster-operator:support-training
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: STRIMZI_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: STRIMZI_FULL_RECONCILIATION_INTERVAL_MS
+          value: "120000"
+        - name: STRIMZI_OPERATION_TIMEOUT_MS
+          value: "300000"
+        - name: STRIMZI_DEFAULT_ZOOKEEPER_IMAGE
+          value: strimzici/zookeeper:support-training
+        - name: STRIMZI_DEFAULT_KAFKA_IMAGE
+          value: strimzici/kafka:support-training
+        - name: STRIMZI_DEFAULT_KAFKA_CONNECT_IMAGE
+          value: strimzici/kafka-connect:support-training
+        - name: STRIMZI_DEFAULT_KAFKA_CONNECT_S2I_IMAGE
+          value: strimzici/kafka-connect-s2i:support-training
+        - name: STRIMZI_DEFAULT_TOPIC_OPERATOR_IMAGE
+          value: strimzici/topic-operator:support-training
+        - name: STRIMZI_DEFAULT_KAFKA_INIT_IMAGE
+          value: strimzici/kafka-init:support-training
+        - name: STRIMZI_DEFAULT_TLS_SIDECAR_ZOOKEEPER_IMAGE
+          value: strimzici/zookeeper-stunnel:support-training
+        - name: STRIMZI_DEFAULT_TLS_SIDECAR_KAFKA_IMAGE
+          value: strimzici/kafka-stunnel:support-training
+        - name: STRIMZI_DEFAULT_TLS_SIDECAR_TOPIC_OPERATOR_IMAGE
+          value: strimzici/topic-operator-stunnel:support-training
+        - name: STRIMZI_LOG_LEVEL
+          value: INFO
+        livenessProbe:
+          httpGet:
+            path: /healthy
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 256Mi
+          requests:
+            cpu: 200m
+            memory: 256Mi
+  strategy:
+    type: Recreate
