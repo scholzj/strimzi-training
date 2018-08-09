@@ -1,4 +1,4 @@
-# Strimzi Training
+# Strimzi Training - Lab
 
 * Checkout this repository which will be used during the lab:
   * `git clone https://github.com/scholzj/strimzi-training.git`
@@ -78,30 +78,36 @@ to:
   * Edit the topic to set 3 partitions and 2 replicas
 * Create the topic
   * `oc apply -f examples/topic/kafka-topic.yaml`
+* List the topics:
+  * `oc get kafkatopics`
 * Open the file `examples/topic/kafka-topic.yaml`
   * Edit the topic to set 3 partitions and 2 replicas
 * Create the topic
   * `oc apply -f examples/topic/kafka-topic.yaml`
   * Check the Topic Operator logs to see how it processed the topic
     * `oc logs -c topic-operator $(oc get pod -l strimzi.io/name=my-cluster-topic-operator -o=jsonpath='{.items[0].metadata.name}')`
-* Open the file `examples/user/kafka-topic.yaml`
+* List the topics:
+  * `oc get kafkatopics`
+* Open the file `examples/user/kafka-user.yaml`
   * Review the access rights configured in the file
 * Create the user
-  * `oc apply -f examples/topic/kafka-user.yaml`
+  * `oc apply -f examples/user/kafka-user.yaml`
   * Check the User Operator logs to see how it processed the user
     * `oc logs -c user-operator $(oc get pod -l strimzi.io/name=my-cluster-topic-operator -o=jsonpath='{.items[0].metadata.name}')`
   * Check the secret with the certificate of the newly created user
     * `oc get secret my-user -o yaml`
+* List the users:
+  * `oc get kafkausers`
 * Check the _Hello World_ consumer and producer in `examples/hello-world/deployment.yaml`
   * Notice how it is using the secret created by the User Operator to load the TLS certificates
 * Deploy the _Hello World_ producer and consumer
   * `oc apply -f examples/hello-world/deployment.yaml`
 * Check the producer and consumer logs to verify that they are working
-  * `oc logs hello-world-producer -f`
-  * `oc logs hello-world-consumer -f`
+  * `oc logs $(oc get pod -l app=hello-world-producer -o=jsonpath='{.items[0].metadata.name}') -f`
+  * `oc logs $(oc get pod -l app=hello-world-consumer -o=jsonpath='{.items[0].metadata.name}') -f`
 * Change the deployment configuration of the producer:
   * `oc edit deployment hello-world-producer`
   * And set the environment variable `TOPIC` to some other topic
-  * Wait for the pod to restart and check it gets an _authorization error_ using `oc logs hello-world-producer -f`
+  * Wait for the pod to restart and check it gets an _authorization error_ using `oc logs $(oc get pod -l app=hello-world-producer -o=jsonpath='{.items[0].metadata.name}') -f`
   * Edit the KafkaUser resource with `oc edit kafkauser my-user` and update the access rights to allow it to use the new topic
   * Check the logs again to see how it is now authorized to produce to the new topic
