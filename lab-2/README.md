@@ -1,140 +1,151 @@
 # Strimzi Training - Lab 2
 
+Lab 2 is using Strimzi 0.6.0-rc1. It takes you through different configuration aspect of Strimzi deployments
+
 * Checkout this repository which will be used during the lab:
   * `git clone https://github.com/scholzj/strimzi-training.git`
-* Explore the files in the examples/install/cluster-operator directory: the service account, the RBAC files, the CRD definitions and the Cluster Operator deployment
+* Go to the `lab-2` directory
+  * `cd lab-2`
 * Start you OpenShift cluster
   * You should use OpenShift 3.9 or higher
   * Run `minishift start` or `oc cluster up`
-* Create new project and give the developer user admin rights and set myproject as the default project
-  * `oc new-project myproject2 --display-name="My Project 2"`
-  * `oc adm policy add-role-to-user admin developer -n myproject2`
-  * `oc project myproject`
-* Login ad cluster administrator
+* Login as cluster administrator
   * `oc login -u system:admin`
-* Edit the file `examples/install/cluster-operator/05-Deployment-strimzi-cluster-operator.yaml`
-  * Find the configuration of the environment variable `STRIMZI_NAMESPACE`
-  * Set its value to `myproject,myproject2`
+* Install the Cluster Operator
+  * `oc apply -f install/`
 
-```yaml
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  # ...
-spec:
-  replicas: 1
-  template:
-    # ...
-    spec:
-      containers:
-      - name: strimzi-cluster-operator
-        env:
-        - name: STRIMZI_NAMESPACE
-          value: myproject,myproject2
-        # ...
-```
+## Replicas
 
-* Open the following files and make sure the namespace set in them is the namespace where you want to deploy Strimzi
-  * `examples/install/cluster-operator/02-ClusterRoleBinding-strimzi-cluster-operator.yaml`
-  * `examples/install/cluster-operator/03-ClusterRoleBinding-strimzi-cluster-operator-kafka-broker-delegation.yaml`
-  * `examples/install/cluster-operator/04-ClusterRoleBinding-strimzi-cluster-operator-topic-operator-delegation.yaml`
-* Deploy the Cluster Operator
-  * `oc apply -f examples/install/cluster-operator/`
-* Check that it is running and that it works
-  * Using the OpenShift webconsole
-  * Using the command line
-    * `oc get deployment strimzi-cluster-operator`
-    * `oc logs $(oc get pod -l name=strimzi-cluster-operator -o=jsonpath='{.items[0].metadata.name}')`
-* Open the file `examples/kafka/kafka-persistent.yaml` and get familiar with it
-* Deploy the Kafka cluster in one of the namespaces which the Cluster Operator is watching
-  * `oc apply -f examples/kafka/kafka-persistent.yaml -n myproject`
-* Watch as the Kafka cluster is deployed
-  * Using the OpenShift webconsole
-  * Using the command line
-    * `oc -n myproject get pods -l strimzi.io/cluster=my-cluster -w`
-* Edit the Kafka cluster:
-  * From the command line do `oc edit kafka my-cluster` and change the following section to enable TLS client authentication and authroization. Change it from:
+* Open `replicas/kafka.yaml` and have a look at all the different replicas configuration
+* Deploy the Kafka cluster and wait until it is deployed
+  * `oc apply -f replicas/kafka.yaml`
+* Open `replicas/kafka-connect.yaml` and have a look at all the replicas configuration
+* Deploy the Kafka Connect cluster and wait until it is deployed
+  * `oc apply -f replicas/kafka-connect.yaml`
+* Wait for the deployments to be ready and check the pods
+  * `oc get pods`
+* Edit the Kafka cluster and scale-up the Kafka brokers
+  * `oc edit kafka my-cluster`
+  * Change the resources for Kafka broker to very large number. Foŕ example change the memory request and limit for Kafka broker to 20GB.
 
 ```
+  kafka:
+    replicas: 5
+```
+
+* Observe how the scaling works
+  * New pods `my-cluster-kafka-3` and `my-cluster-kafka-4` will be create
+* Now try to scale down to 3 nodes
+* Observe how the scaling works
+  * Pods `my-cluster-kafka-3` and `my-cluster-kafka-4` will be deleted
+  * Notice that AMQ Streams removes the pod one by one, not both at the same time
+* Go to the OpenShift webconsole
+* Select the Kafka Connect deployment and scale it form 1 to 3 replicas
+* Watch how OpenShift tries to scale the application but how the Cluster Operator scales it down in the next reconciliation loop
+* Try to scale KAfka connect up and down using `oc edit kafkaconnect my-connect-cluster` and see that this was it works
+* Observe which pods are created and deleted
+* Delete the deployments
+  * `oc delete kafkaconnect my-connect-cluster`
+  * `oc delete kafka my-cluster`
+
+## Resources
+
+* Open `resources/kafka-with-resources.yaml` and have a look at all the different resource configuration
+* Deploy the Kafka cluster and wait until it is deployed
+  * `oc apply -f resources/kafka-with-resources.yaml`
+* Try the OpenShift web console or the UI to check that the resources were correctly applied
+* Try to change the resources:
+  * `oc edit kafka my-cluster`
+  * Change the resources for Kafka broker to very large number. Foŕ example change the memory request and limit for Kafka broker to 20GB.
+
+```
+  kafka:
+    replicas: 3
+    storage:
+      type: ephemeral
+    resources:
+      requests:
+        memory: 20Gi
+        cpu: 200m
+      limits:
+        memory: 20Gi
+        cpu: 1000m
     listeners:
       plain: {}
       tls: {}
 ```
 
-to:
+* Observe what happens when the pod cannot be scheduled because of insuficient memory:
+  * Check that the pod will stay in the `Pending` state
+  * Check the events related to the `Pending` pod
+    * `oc get events | grep  _<pod_name>_`
+    * You should see `FailedScheduling` event with the reason similar to _0/1 nodes are available: 1 Insufficient memory._
+* Use `oc edit kafka my-cluster` again and revert the memory request and limit
+  * This might take a lot of time, because the Cluster Operator will be waiting for the pod to start
+  * Only after it timeouts, it will see the new changes and revert the memeory back again
+  * This timeout is configured in Cluster Operator using the environment variable `STRIMZI_OPERATION_TIMEOUT_MS`. Default is 5 minutes.
+* Delete the deployment
+  * `oc delete kafka my-cluster`
+
+## Configuration
+
+* Open `configuration/kafka.yaml` and have a look at the configuration option used there for Apache Kafka
+* Deploy the Kafka cluster and wait until it is deployed
+  * `oc apply -f configuration/kafka.yaml`
+* Check the Kafka pod logs using `oc logs my-cluster-kafka-0 -c kafka` or in the OpenShift webconsole
+  * On the beginning of the log you will see the broker configuration printed
+  * Check that it contains the values form the `Kafka` resource
+  * Notice also the other options configured by AMQ Streams
 
 ```
-    listeners:
-      tls:
-        authentication:
-          type: tls
-    authorization:
-      type: simple
-```
-
-* Watch as the Cluster Operator does a rolling update to reconfigure Kafka
-  * `oc -n myproject get pods -l strimzi.io/cluster=my-cluster -w`
-* Open the file `examples/topic/kafka-topic.yaml`
-  * Edit the topic to set 3 partitions and 2 replicas
-* Create the topic
-  * `oc apply -f examples/topic/kafka-topic.yaml`
-* List the topics:
-  * `oc get kafkatopics`
-* Open the file `examples/topic/kafka-topic.yaml`
-  * Edit the topic to set 3 partitions and 2 replicas
-* Create the topic
-  * `oc apply -f examples/topic/kafka-topic.yaml`
-  * Check the Topic Operator logs to see how it processed the topic
-    * `oc logs -c topic-operator $(oc get pod -l strimzi.io/name=my-cluster-topic-operator -o=jsonpath='{.items[0].metadata.name}')`
-* List the topics:
-  * `oc get kafkatopics`
-* Open the file `examples/user/kafka-user.yaml`
-  * Review the access rights configured in the file
-* Create the user
-  * `oc apply -f examples/user/kafka-user.yaml`
-  * Check the User Operator logs to see how it processed the user
-    * `oc logs -c user-operator $(oc get pod -l strimzi.io/name=my-cluster-topic-operator -o=jsonpath='{.items[0].metadata.name}')`
-  * Check the secret with the certificate of the newly created user
-    * `oc get secret my-user -o yaml`
-* List the users:
-  * `oc get kafkausers`
-* Check the _Hello World_ consumer and producer in `examples/hello-world/deployment.yaml`
-  * Notice how it is using the secret created by the User Operator to load the TLS certificates
-* Deploy the _Hello World_ producer and consumer
-  * `oc apply -f examples/hello-world/deployment.yaml`
-* Check the producer and consumer logs to verify that they are working
-  * `oc logs $(oc get pod -l app=hello-world-producer -o=jsonpath='{.items[0].metadata.name}') -f`
-  * `oc logs $(oc get pod -l app=hello-world-consumer -o=jsonpath='{.items[0].metadata.name}') -f`
-* Change the deployment configuration of the producer:
-  * `oc edit deployment hello-world-producer`
-  * And set the environment variable `TOPIC` to some other topic
-  * Wait for the pod to restart and check it gets an _authorization error_ using `oc logs $(oc get pod -l app=hello-world-producer -o=jsonpath='{.items[0].metadata.name}') -f`
-  * Edit the KafkaUser resource with `oc edit kafkauser my-user` and update the access rights to allow it to use the new topic
-  * Check the logs again to see how it is now authorized to produce to the new topic
-* Add a new user `my-connect` for Kafka Connect
-  * Edit the `examples/user/kafka-user.yaml` file:
-    * Change the username to `my-connect`
-    * Remove the `authorization` section
-  * Create the user using `oc apply -f examples/user/kafka-user.yaml`
-* Edit the Kafka cluster again:
-  * From the command line do `oc edit kafka my-cluster` and change the following section to add user `CN=my-connect` as a super user. Change it from:
+# Provided configuration
+transaction.state.log.replication.factor=3
+default.replication.factor=3
+offsets.topic.replication.factor=3
+transaction.state.log.min.isr=1
 
 ```
-    authorization:
-      type: simple
+
+* Check the Zookeeper pod logs using `oc logs my-cluster-zookeeper-0 -c zookeeper` or in the OpenShift webconsole
+  * On the beginning of the log you will see the node configuration printed
+  * Check that although you didn't specify any values in the `Kafka` resource, the default values are there
+  * Notice also the other options configured by AMQ Streams
+
+```
+# Provided configuration
+timeTick=2000
+autopurge.purgeInterval=1
+syncLimit=2
+initLimit=5
 ```
 
-to:
+* Edit the Kafka resource and change the Kafka configuration to:
 
 ```
-    authorization:
-      type: simple
-      superUsers:
-        - CN=my-connect
+    config:
+      broker.id=10
+      num.partitions: 1
+      num.recovery.threads.per.data.dir: 1
+      default.replication.factor: 3
+      offsets.topic.replication.factor: 3
+      transaction.state.log.replication.factor: 3
+      transaction.state.log.min.isr: 1
+      log.retention.hours: 168
+      log.segment.bytes: 1073741824
+      log.retention.check.interval.ms: 300000
+      num.network.threads: 3
+      num.io.threads: 8
+      socket.send.buffer.bytes: 102400
+      socket.receive.buffer.bytes: 102400
+      socket.request.max.bytes: 104857600
+      group.initial.rebalance.delay.ms: 0
 ```
 
-* Wait until the rolling update is finished
-* Open the file `examples/kafka-connect/kafka-connect.yaml`
-  * Notice the configuration related to the authentication
-* Deploy Kafka Connect using `oc apply -f examples/kafka-connect/kafka-connect.yaml`
-* Wait until Kafka Connect starts and check that it connected to the broker and created some topics using `oc get kafkatopics`
+* Wait for the rolling update to complete
+* Check the Kafka pod logs using `oc logs my-cluster-kafka-0 -c kafka` or in the OpenShift webconsole
+  * On the beginning of the log you will see the broker configuration printed
+  * Check that the values were updated, but the option `broker.id=10` is missing because it is forbidden
+  * Check Cluster Operator logs to see the warning about forbidden option
+    * `oc logs $(oc get pod -l name=strimzi-cluster-operator -o=jsonpath='{.items[0].metadata.name}') | grep WARNING`
+* Delete the deployments
+  * `oc delete kafka my-cluster`

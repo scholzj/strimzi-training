@@ -2,6 +2,8 @@
 
 * Checkout this repository which will be used during the lab:
   * `git clone https://github.com/scholzj/strimzi-training.git`
+* Go to the `lab-1` directory
+  * `cd lab-1`
 * Explore the files in the examples/install/cluster-operator directory: the service account, the RBAC files, the CRD definitions and the Cluster Operator deployment
 * Start you OpenShift cluster
   * You should use OpenShift 3.9 or higher
@@ -10,7 +12,7 @@
   * `oc new-project myproject2 --display-name="My Project 2"`
   * `oc adm policy add-role-to-user admin developer -n myproject2`
   * `oc project myproject`
-* Login ad cluster administrator
+* Login as cluster administrator
   * `oc login -u system:admin`
 * Edit the file `examples/install/cluster-operator/05-Deployment-strimzi-cluster-operator.yaml`
   * Find the configuration of the environment variable `STRIMZI_NAMESPACE`
