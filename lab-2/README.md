@@ -28,7 +28,7 @@ Lab 2 is using Strimzi 0.6.0-rc1. It takes you through different configuration a
   * `oc edit kafka my-cluster`
   * Change the resources for Kafka broker to very large number. Foŕ example change the memory request and limit for Kafka broker to 20GB.
 
-```
+```yaml
   kafka:
     replicas: 5
 ```
@@ -58,7 +58,7 @@ Lab 2 is using Strimzi 0.6.0-rc1. It takes you through different configuration a
   * `oc edit kafka my-cluster`
   * Change the resources for Kafka broker to very large number. Foŕ example change the memory request and limit for Kafka broker to 20GB.
 
-```
+```yaml
   kafka:
     replicas: 3
     storage:
@@ -97,7 +97,7 @@ Lab 2 is using Strimzi 0.6.0-rc1. It takes you through different configuration a
   * Check that it contains the values form the `Kafka` resource
   * Notice also the other options configured by AMQ Streams
 
-```
+```properties
 # Provided configuration
 transaction.state.log.replication.factor=3
 default.replication.factor=3
@@ -111,7 +111,7 @@ transaction.state.log.min.isr=1
   * Check that although you didn't specify any values in the `Kafka` resource, the default values are there
   * Notice also the other options configured by AMQ Streams
 
-```
+```properties
 # Provided configuration
 timeTick=2000
 autopurge.purgeInterval=1
@@ -121,9 +121,9 @@ initLimit=5
 
 * Edit the Kafka resource and change the Kafka configuration to:
 
-```
+```yaml
     config:
-      broker.id=10
+      broker.id: 10
       num.partitions: 1
       num.recovery.threads.per.data.dir: 1
       default.replication.factor: 3
@@ -146,6 +146,147 @@ initLimit=5
   * On the beginning of the log you will see the broker configuration printed
   * Check that the values were updated, but the option `broker.id=10` is missing because it is forbidden
   * Check Cluster Operator logs to see the warning about forbidden option
-    * `oc logs $(oc get pod -l name=strimzi-cluster-operator -o=jsonpath='{.items[0].metadata.name}') | grep WARNING`
+    * `oc logs $(oc get pod -l name=strimzi-cluster-operator -o=jsonpath='{.items[0].metadata.name}') | grep WARN`
 * Delete the deployments
   * `oc delete kafka my-cluster`
+
+## Storage
+
+* Open `storage/kafka.yaml` and have a look at the storage configuration
+* Deploy the Kafka cluster and wait until it is deployed
+  * `oc apply -f storage/kafka.yaml`
+* Check the Persistent storage used by Kafka and Zookeeper
+  * Do `oc get pv` and look for the Persistent Volumes bound to the Kafka and Zookeeper pods
+  * Do `oc get pvc` and look for the Persistent Volume Claims bound to the Kafka and Zookeeper pods.The PVCs are linking Kafka and Zookeeper to the volumes.
+* Edit the Kafka resource and change the storage to ephemeral:
+
+```yaml
+apiVersion: kafka.strimzi.io/v1alpha1
+kind: Kafka
+metadata:
+  name: my-cluster
+spec:
+  kafka:
+    replicas: 3
+    storage:
+      type: ephemeral
+    listeners:
+      plain: {}
+      tls: {}
+  zookeeper:
+    replicas: 3
+    storage:
+      type: ephemeral
+  entityOperator:
+    topicOperator: {}
+    userOperator: {}
+```
+
+* Check Cluster Operator logs to see the warning about forbidden option
+  * `oc logs $(oc get pod -l name=strimzi-cluster-operator -o=jsonpath='{.items[0].metadata.name}') | grep WARN`
+  * The warning will repeat until you revert the storage change
+* Check that no rolling update and no storage change happens!
+* Delete the deployments
+  * `oc delete kafka my-cluster`
+* Check that the PVs and PVCs used by the pods are still there after we deleted the deployment
+  * `oc get pv`
+  * `oc get pvc`
+
+## Entity Operator
+
+* Add new project / namespace but keep the old project as default
+  * `oc new-project myproject2 --display-name="My Project 2"`
+  * `oc project myproject`
+* Open `entity-operator/kafka.yaml` and check the missing `entityOperator` property
+* Deploy the Kafka cluster and wait until it is deployed
+  * `oc apply -f entity-operator/kafka.yaml`
+* The cluster will be deployed, but the Entity Operator will be missing
+* Edit the Kafka resource and add `entityOperator` as in the example below with enabled Topic Operator:
+
+```yaml
+apiVersion: kafka.strimzi.io/v1alpha1
+kind: Kafka
+metadata:
+  name: my-cluster
+spec:
+  kafka:
+    replicas: 3
+    storage:
+      type: ephemeral
+    listeners:
+      plain: {}
+      tls: {}
+  zookeeper:
+    replicas: 3
+    storage:
+      type: ephemeral
+  entityOperator:
+    topicOperator: {}
+```
+
+* Wait for the update to finish and check that the Entity Operator is now deployed
+  * It should contain 2 containers ... the TLS sidecar and the Topic Operator
+* Edit the Kafka resource and add `entityOperator` as in the example below with enabled Topic Operator:
+
+```yaml
+apiVersion: kafka.strimzi.io/v1alpha1
+kind: Kafka
+metadata:
+  name: my-cluster
+spec:
+  kafka:
+    replicas: 3
+    storage:
+      type: ephemeral
+    listeners:
+      plain: {}
+      tls: {}
+  zookeeper:
+    replicas: 3
+    storage:
+      type: ephemeral
+  entityOperator:
+    topicOperator: {}
+    userOperator: {}
+```
+
+* Wait for the update to finish and check that the Entity Operator has been re-deployed
+  * It should contain 3 containers ... the TLS sidecar, the Topic Operator, and the User Operator
+* Check the Entity Operator deplyoment in OpenShift web console
+  * Check the environment variables which contain the default values
+* Edit the Kafka resource and once again change `entityOperator` property as in the example and add some more confgiuration options:
+
+```yaml
+apiVersion: kafka.strimzi.io/v1alpha1
+kind: Kafka
+metadata:
+  name: my-cluster
+spec:
+  kafka:
+    replicas: 3
+    storage:
+      type: ephemeral
+    listeners:
+      plain: {}
+      tls: {}
+  zookeeper:
+    replicas: 3
+    storage:
+      type: ephemeral
+  entityOperator:
+    topicOperator:
+      watchedNamespace: myproject2
+      reconciliationIntervalSeconds: 30
+      zookeeperSessionTimeoutSeconds: 10
+      topicMetadataMaxAttempts: 10
+    userOperator:
+      watchedNamespace: myproject2
+      reconciliationIntervalSeconds: 30
+      zookeeperSessionTimeoutSeconds: 10
+```
+
+* Check the Entity Operator deplyoment in OpenShift web console again
+  * Verify that all values have been updated
+* Delete the deployments
+  * `oc delete kafka my-cluster`
+
