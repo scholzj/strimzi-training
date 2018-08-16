@@ -18,9 +18,7 @@ spec:
         imagePullPolicy: IfNotPresent
         env:
         - name: STRIMZI_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
+          value: myproject,myproject2
         - name: STRIMZI_FULL_RECONCILIATION_INTERVAL_MS
           value: "120000"
         - name: STRIMZI_OPERATION_TIMEOUT_MS
