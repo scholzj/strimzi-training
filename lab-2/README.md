@@ -289,4 +289,3 @@ spec:
   * Verify that all values have been updated
 * Delete the deployments
   * `oc delete kafka my-cluster`
-
