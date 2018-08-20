@@ -42,7 +42,7 @@ Lab 2 is using Strimzi 0.6.0-rc1. It takes you through different configuration a
 * Go to the OpenShift webconsole
 * Select the Kafka Connect deployment and scale it form 1 to 3 replicas
 * Watch how OpenShift tries to scale the application but how the Cluster Operator scales it down in the next reconciliation loop
-* Try to scale KAfka connect up and down using `oc edit kafkaconnect my-connect-cluster` and see that this was it works
+* Try to scale Kafka connect up and down using `oc edit kafkaconnect my-connect-cluster` and see that this was it works
 * Observe which pods are created and deleted
 * Delete the deployments
   * `oc delete kafkaconnect my-connect-cluster`
@@ -103,7 +103,6 @@ transaction.state.log.replication.factor=3
 default.replication.factor=3
 offsets.topic.replication.factor=3
 transaction.state.log.min.isr=1
-
 ```
 
 * Check the Zookeeper pod logs using `oc logs my-cluster-zookeeper-0 -c zookeeper` or in the OpenShift webconsole
