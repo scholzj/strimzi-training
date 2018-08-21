@@ -82,22 +82,16 @@ to:
   * `oc apply -f examples/topic/kafka-topic.yaml`
 * List the topics:
   * `oc get kafkatopics`
-* Open the file `examples/topic/kafka-topic.yaml`
-  * Edit the topic to set 3 partitions and 2 replicas
-* Create the topic
-  * `oc apply -f examples/topic/kafka-topic.yaml`
-  * Check the Topic Operator logs to see how it processed the topic
-    * `oc logs -c topic-operator $(oc get pod -l strimzi.io/name=my-cluster-topic-operator -o=jsonpath='{.items[0].metadata.name}')`
-* List the topics:
-  * `oc get kafkatopics`
+* Check the Topic Operator logs to see how it processed the topic
+  * `oc logs -c topic-operator $(oc get pod -l strimzi.io/name=my-cluster-topic-operator -o=jsonpath='{.items[0].metadata.name}')`
 * Open the file `examples/user/kafka-user.yaml`
   * Review the access rights configured in the file
 * Create the user
   * `oc apply -f examples/user/kafka-user.yaml`
-  * Check the User Operator logs to see how it processed the user
-    * `oc logs -c user-operator $(oc get pod -l strimzi.io/name=my-cluster-topic-operator -o=jsonpath='{.items[0].metadata.name}')`
-  * Check the secret with the certificate of the newly created user
-    * `oc get secret my-user -o yaml`
+* Check the User Operator logs to see how it processed the user
+  * `oc logs -c user-operator $(oc get pod -l strimzi.io/name=my-cluster-topic-operator -o=jsonpath='{.items[0].metadata.name}')`
+* Check the secret with the certificate of the newly created user
+  * `oc get secret my-user -o yaml`
 * List the users:
   * `oc get kafkausers`
 * Check the _Hello World_ consumer and producer in `examples/hello-world/deployment.yaml`
