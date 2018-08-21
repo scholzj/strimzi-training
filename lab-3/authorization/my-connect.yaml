@@ -1,0 +1,90 @@
+apiVersion: kafka.strimzi.io/v1alpha1
+kind: KafkaUser
+metadata:
+  name: my-connect
+  labels:
+    strimzi.io/cluster: my-cluster
+spec:
+  authentication:
+    type: tls
+  authorization:
+    type: simple
+    acls:
+      # Connector needs to read the my-topic topic
+      - resource:
+          type: topic
+          name: my-topic
+        operation: Read
+      - resource:
+          type: topic
+          name: my-topic
+        operation: Describe
+      - resource:
+          type: group
+          name: connect-sink-test
+        operation: Read
+      # Kafka Connects internal topics
+      - resource:
+          type: group
+          name: connect-cluster
+        operation: Read
+      - resource:
+          type: topic
+          name: connect-cluster-configs
+        operation: Read
+      - resource:
+          type: topic
+          name: connect-cluster-configs
+        operation: Describe
+      - resource:
+          type: topic
+          name: connect-cluster-configs
+        operation: Write
+      - resource:
+          type: topic
+          name: connect-cluster-configs
+        operation: Describe
+      - resource:
+          type: topic
+          name: connect-cluster-configs
+        operation: Create
+      - resource:
+          type: topic
+          name: connect-cluster-status
+        operation: Read
+      - resource:
+          type: topic
+          name: connect-cluster-status
+        operation: Describe
+      - resource:
+          type: topic
+          name: connect-cluster-status
+        operation: Write
+      - resource:
+          type: topic
+          name: connect-cluster-status
+        operation: Describe
+      - resource:
+          type: topic
+          name: connect-cluster-status
+        operation: Create
+      - resource:
+          type: topic
+          name: connect-cluster-offsets
+        operation: Read
+      - resource:
+          type: topic
+          name: connect-cluster-offsets
+        operation: Describe
+      - resource:
+          type: topic
+          name: connect-cluster-offsets
+        operation: Write
+      - resource:
+          type: topic
+          name: connect-cluster-offsets
+        operation: Describe
+      - resource:
+          type: topic
+          name: connect-cluster-offsets
+        operation: Create

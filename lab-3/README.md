@@ -27,6 +27,13 @@ Lab 2 is using Strimzi 0.6.0. It takes you through the topic and user management
 * Check the producer and consumer logs from the Openshift webconsole or from the command line to verify that they are working:
   * `oc logs $(oc get pod -l app=hello-world-producer -o=jsonpath='{.items[0].metadata.name}') -f`
   * `oc logs $(oc get pod -l app=hello-world-consumer -o=jsonpath='{.items[0].metadata.name}') -f`
+* We can also easily deploy Kafka Connect
+  * Connecting Kafka Connect to Kafka brokers without encryption and authentication needs you to only specify the bootstrap service and port
+  * `oc apply -f plain/connect.yaml`
+* To check that Kafka Connect works, we can deploy a FileSink connector and have it write messages produced by our Hello World producer into a file.
+  * `oc exec -ti $(oc get pod -l app=my-connect-cluster -o=jsonpath='{.items[0].metadata.name}') -- curl -X POST -H "Content-Type: application/json" --data '{ "name": "sink-test", "config": { "connector.class": "FileStreamSink", "tasks.max": "3", "topics": "my-topic", "file": "/tmp/test.sink.txt" } }' http://localhost:8083/connectors`
+* When the connector works, you should see the records being written into the file
+  * `oc exec -ti $(oc get pod -l app=my-connect-cluster -o=jsonpath='{.items[0].metadata.name}') -- tail -f /tmp/test.sink.txt`
 
 ## Encrypted connections
 
@@ -60,6 +67,21 @@ Lab 2 is using Strimzi 0.6.0. It takes you through the topic and user management
 * Apply the changes and check that the updated producers and consumers started working again
   * `oc logs $(oc get pod -l app=hello-world-producer -o=jsonpath='{.items[0].metadata.name}') -f`
   * `oc logs $(oc get pod -l app=hello-world-consumer -o=jsonpath='{.items[0].metadata.name}') -f`
+* Also Kafka Connect deployment needs to be updated to use encrpytion
+  * For Kafka Connect, all configuration should be done in the `KafkaConnect` resource
+  * Edit the Kafka Connect resource
+    * Change the port number to `9093`
+    * Add encryption
+
+```yaml
+  tls:
+    trustedCertificates:
+      - secretName: my-cluster-cluster-ca-cert
+        certificate: ca.crt
+```
+
+* After the rolling update of Kafka Connect is complete, you can check that the connector we deployed works again
+  * `oc exec -ti $(oc get pod -l app=my-connect-cluster -o=jsonpath='{.items[0].metadata.name}') -- tail -f /tmp/test.sink.txt`
 
 ## Authenticated connections
 
@@ -120,6 +142,23 @@ and
 * Apply the changes and check that the updated producers and consumers started working again
   * `oc logs $(oc get pod -l app=hello-world-producer -o=jsonpath='{.items[0].metadata.name}') -f`
   * `oc logs $(oc get pod -l app=hello-world-consumer -o=jsonpath='{.items[0].metadata.name}') -f`
+* Kafka Connect deployment needs to be updated to use authentication as well
+  * Create a new user `my-connect` which will be used for Kafka Connect
+    * `oc apply -f authentication/my-connect.yaml`
+  * Edit the Kafka Connect resource
+    * Add encryption
+
+```yaml
+  authentication:
+    type: tls
+    certificateAndKey:
+      secretName: my-connect
+      certificate: user.crt
+      key: user.key
+```
+
+* After the rolling update of Kafka Connect is complete, you can check that the connector we deployed works again
+  * `oc exec -ti $(oc get pod -l app=my-connect-cluster -o=jsonpath='{.items[0].metadata.name}') -- tail -f /tmp/test.sink.txt`
 
 ## Authorized connections
 
@@ -171,3 +210,94 @@ and
   * `oc logs $(oc get pod -l app=hello-world-producer -o=jsonpath='{.items[0].metadata.name}') -f`
   * `oc logs $(oc get pod -l app=hello-world-consumer -o=jsonpath='{.items[0].metadata.name}') -f`
 * _On your own: Play with the ACL rules to see in more detail how they work_
+* Kafka Connect needs many different ACL rights to work
+  * You casn either set the user `my-connect` as _super user_
+  * Or add all required rights individually
+
+```yaml
+  authorization:
+    type: simple
+    acls:
+      # Connector needs to read the my-topic topic
+      - resource:
+          type: topic
+          name: my-topic
+        operation: Read
+      - resource:
+          type: topic
+          name: my-topic
+        operation: Describe
+      - resource:
+          type: group
+          name: connect-sink-test
+        operation: Read
+      # Kafka Connects internal topics
+      - resource:
+          type: group
+          name: connect-cluster
+        operation: Read
+      - resource:
+          type: topic
+          name: connect-cluster-configs
+        operation: Read
+      - resource:
+          type: topic
+          name: connect-cluster-configs
+        operation: Describe
+      - resource:
+          type: topic
+          name: connect-cluster-configs
+        operation: Write
+      - resource:
+          type: topic
+          name: connect-cluster-configs
+        operation: Describe
+      - resource:
+          type: topic
+          name: connect-cluster-configs
+        operation: Create
+      - resource:
+          type: topic
+          name: connect-cluster-status
+        operation: Read
+      - resource:
+          type: topic
+          name: connect-cluster-status
+        operation: Describe
+      - resource:
+          type: topic
+          name: connect-cluster-status
+        operation: Write
+      - resource:
+          type: topic
+          name: connect-cluster-status
+        operation: Describe
+      - resource:
+          type: topic
+          name: connect-cluster-status
+        operation: Create
+      - resource:
+          type: topic
+          name: connect-cluster-offsets
+        operation: Read
+      - resource:
+          type: topic
+          name: connect-cluster-offsets
+        operation: Describe
+      - resource:
+          type: topic
+          name: connect-cluster-offsets
+        operation: Write
+      - resource:
+          type: topic
+          name: connect-cluster-offsets
+        operation: Describe
+      - resource:
+          type: topic
+          name: connect-cluster-offsets
+        operation: Create
+```
+
+* After the rolling update of Kafka Connect is complete, you can check that the connector we deployed works again
+  * `oc exec -ti $(oc get pod -l app=my-connect-cluster -o=jsonpath='{.items[0].metadata.name}') -- tail -f /tmp/test.sink.txt`
+* _On your own: Try to modify the deployment to set `my-connect` user as super user_
