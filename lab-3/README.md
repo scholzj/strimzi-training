@@ -1,6 +1,6 @@
 # Strimzi Training - Lab 3
 
-Lab 2 is using Strimzi 0.6.0. It takes you through the topic and user management.
+Lab 3 is using Strimzi 0.6.0. It takes you through the topic and user management.
 
 * Checkout this repository which will be used during the lab:
   * `git clone https://github.com/scholzj/strimzi-training.git`
