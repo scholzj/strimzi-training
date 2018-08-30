@@ -65,8 +65,6 @@ Lab 4 is using Strimzi 0.6.0. It takes you through the Role Based Access Control
 * _On your own:_
   * _Once the old Kafka cluster is deleted, you can try to deploy the cluster without Kafka rack awareness or into the `myproject2` namespace and watch the impact on the bindings._
   * _This should not need any additional RBAC changes because the regular installation is using Cluster Role Bindings_
-* Once the Kafka cluster is deleted, delete the Cluster Operator
-  * `oc delete -f alternative-rbac/`
 * Change the Cluster operator deployment
   * Instead of watching just the `myproject` namespace, change it to watching `myproject` and `myproject2` namespace:
 
