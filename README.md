@@ -15,3 +15,7 @@ Lab 3 focuses on topic and user management, authentication and authorization. Th
 ## Lab 4 - RBAC
 
 Lab 4 focuses on Role Based Access Control (RBAC). The lab can be found [here](./lab-4/).
+
+## Lab 5 - Monitoring
+
+Lab 5 focuses on Command line tools, Monitoring and Promethues. The lab can be found [here](./lab-5/).
