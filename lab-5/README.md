@@ -96,4 +96,17 @@ Lab 2 is using Strimzi 0.6.0. It takes you through different aspects of monitori
     * In the same window switch to Dahsboard and import the _Prometheus Stats_ dashboard
   * Click the icon in the top left corner and select _Dashboards_ and _Home_ and afterwards in the menu next to the icon select the _Prometheus Stats_ dashboard.
     * Verify that you see the _Target Scrapes_ and _Scrape Duration_ charts
-    * These show metrics of how Prometheus scrapes the KAfka metrics
+    * These show metrics of how Prometheus scrapes the Kafka metrics
+  * Click the icon in the top left corner and select _Dashboards_ and _Import_
+    * In the import window, select the `dashboard.json` file from this directory and `Prometheus` as the data source and import it
+    * Select the _Kafka Dashboard_ and have a look at the metrics
+  * Play with the Kafka components and watch how it reflects ni the metrics. For example:
+    * Scale the consumer down to 0 using `oc scale deployment hello-world-consumer --replicas=0`
+    * Scale the producer to 0 using `oc scale deployment hello-world-producer --replicas=0`
+    * Change the number of messages the producer is sending (environment variable `DELAY_MS` in the producer deployment)
+  * Try to add some new chart to the Dashboard
+    * Click on the title of the _Bytes Out Per Second_ chart and select duplicate
+    * Click th title of the newly added graph and select edit
+    * In the _General_ tab change the title to _Bytes In Per Second: my-topic_
+    * In the _Metrics_ change the query to `sum(kafka_server_brokertopicmetrics_bytesinpersec_topic_my_topic)`
+    * _On you own: Try to do this for other topics and find out which topic generates most trafic_
