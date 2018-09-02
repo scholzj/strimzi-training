@@ -61,3 +61,39 @@ Lab 2 is using Strimzi 0.6.0. It takes you through different aspects of monitori
   * Run `bin/kafka-log-dirs.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --describe --topic-list my-topic` to list where are the data of our topic located
   * Formated example of the output can be found in [kafka-log-dirs-example.json](./kafka-log-dirs-example.json)
   * This tool can be used to analyze the topic logs for offset and to see in which directory it is stored (useful when JBOD storage is used - currently not supported by Strimzi / AMQ Streams)
+
+## Kafka Connect
+
+* Deploy Kafka Connect
+  * `oc apply -f connect.yaml`
+  * The deployment also created an OpenShift Route for the Kafka Connect REST API
+* Deploy the FileSink connetor from your local command line:
+  * `curl -X POST -H "Content-Type: application/json" --data '{ "name": "sink-test", "config": { "connector.class": "FileStreamSink", "tasks.max": "1", "topics": "my-topic", "file": "/tmp/test.sink.txt" } }' http://my-connect-cluster-myproject.127.0.0.1.nip.io/connectors`
+* Check that the connector has been deployed and that it works:
+  * `curl http://my-connect-cluster-myproject.127.0.0.1.nip.io/connectors/sink-test/status`
+  * `curl http://my-connect-cluster-myproject.127.0.0.1.nip.io/connectors/sink-test/config`
+  * `curl http://my-connect-cluster-myproject.127.0.0.1.nip.io/connectors/sink-test/tasks/0/status`
+* Try to deploy another connector which will fail:
+  * `curl -X POST -H "Content-Type: application/json" --data '{ "name": "sink-failing", "config": { "connector.class": "FileStreamSink", "tasks.max": "1", "topics": "my-topic", "file": "/root/this.will.not.work.txt" } }' http://my-connect-cluster-myproject.127.0.0.1.nip.io/connectors`
+* Check the state of the failing connector:
+  * `curl http://my-connect-cluster-myproject.127.0.0.1.nip.io/connectors/sink-failing/status`
+  * `curl http://my-connect-cluster-myproject.127.0.0.1.nip.io/connectors/sink-failing/tasks/0/status`
+
+## Prometheus metrics
+
+* Check the `kafka.yaml` and `connect.yaml` files
+  * Check the metrics configuration in the `metrics` fields
+* Deploy Prometheus and Grafana installation
+  * `oc apply -f prometheus/`
+* Open Grafana on address[http://grafana-myproject.127.0.0.1.nip.io](http://grafana-myproject.127.0.0.1.nip.io)
+  * Login with username `admin` and password `admin`
+  * Click the _Add data source_ button
+  * Add new data source with following options:
+    * Name: `Prometheus`
+    * Type: `Prometheus`
+    * URL: `http://prometheus:9090`
+    * Press the _Add_ button and make sure is says _Success: Data source is working_
+    * In the same window switch to Dahsboard and import the _Prometheus Stats_ dashboard
+  * Click the icon in the top left corner and select _Dashboards_ and _Home_ and afterwards in the menu next to the icon select the _Prometheus Stats_ dashboard.
+    * Verify that you see the _Target Scrapes_ and _Scrape Duration_ charts
+    * These show metrics of how Prometheus scrapes the KAfka metrics

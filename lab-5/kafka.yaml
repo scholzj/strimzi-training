@@ -2,6 +2,8 @@ apiVersion: kafka.strimzi.io/v1alpha1
 kind: Kafka
 metadata:
   name: my-cluster
+  labels:
+    app: my-cluster
 spec:
   kafka:
     replicas: 3
@@ -16,19 +18,50 @@ spec:
       type: ephemeral
     metrics:
       lowercaseOutputName: true
+      lowercaseOutputLabelNames: true
       rules:
-        - pattern: "kafka.server<type=(.+), name=(.+)PerSec\\w*><>Count"
-          name: "kafka_server_$1_$2_total"
-        - pattern: "kafka.server<type=(.+), name=(.+)PerSec\\w*, topic=(.+)><>Count"
-          name: "kafka_server_$1_$2_total"
-          labels:
-            topic: "$3"
+      - pattern : kafka.server<type=ReplicaManager, name=(.+)><>(Value|OneMinuteRate)
+        name: "kafka_server_replicamanager_$1"
+      - pattern : kafka.controller<type=KafkaController, name=(.+)><>Value
+        name: "kafka_controller_kafkacontroller_$1"
+      - pattern : kafka.server<type=BrokerTopicMetrics, name=(.+)><>OneMinuteRate
+        name: "kafka_server_brokertopicmetrics_$1"
+      - pattern : kafka.network<type=RequestMetrics, name=RequestsPerSec, request=(.+)><>OneMinuteRate
+        name: "kafka_network_requestmetrics_requestspersec_$1"
+      - pattern : kafka.network<type=SocketServer, name=NetworkProcessorAvgIdlePercent><>Value
+        name: "kafka_network_socketserver_networkprocessoravgidlepercent"
+      - pattern : kafka.server<type=ReplicaFetcherManager, name=MaxLag, clientId=(.+)><>Value
+        name: "kafka_server_replicafetchermanager_maxlag_$1"
+      - pattern : kafka.server<type=KafkaRequestHandlerPool, name=RequestHandlerAvgIdlePercent><>OneMinuteRate
+        name: "kafka_kafkarequesthandlerpool_requesthandleravgidlepercent"
+      - pattern : kafka.controller<type=ControllerStats, name=(.+)><>OneMinuteRate
+        name: "kafka_controller_controllerstats_$1"
+      - pattern : kafka.server<type=SessionExpireListener, name=(.+)><>OneMinuteRate
+        name: "kafka_server_sessionexpirelistener_$1"
   zookeeper:
     replicas: 3
     storage:
       type: ephemeral
     metrics:
       lowercaseOutputName: true
+      lowercaseOutputLabelNames: true
+      rules:
+      - pattern: "org.apache.ZooKeeperService<name0=ReplicatedServer_id(\\d+)><>(\\w+)"
+        name: "zookeeper_$2"
+      - pattern: "org.apache.ZooKeeperService<name0=ReplicatedServer_id(\\d+), name1=replica.(\\d+)><>(\\w+)"
+        name: "zookeeper_$3"
+        labels:
+          replicaId: "$2"
+      - pattern: "org.apache.ZooKeeperService<name0=ReplicatedServer_id(\\d+), name1=replica.(\\d+), name2=(\\w+)><>(\\w+)"
+        name: "zookeeper_$4"
+        labels:
+          replicaId: "$2"
+          memberType: "$3"
+      - pattern: "org.apache.ZooKeeperService<name0=ReplicatedServer_id(\\d+), name1=replica.(\\d+), name2=(\\w+), name3=(\\w+)><>(\\w+)"
+        name: "zookeeper_$4_$5"
+        labels:
+          replicaId: "$2"
+          memberType: "$3"
   entityOperator:
     topicOperator: {}
     userOperator: {}
