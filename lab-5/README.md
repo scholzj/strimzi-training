@@ -31,7 +31,7 @@ Lab 2 is using Strimzi 0.6.0. It takes you through different aspects of monitori
 * List all under-replicated partitions
   * `bin/kafka-topics.sh --zookeeper localhost:2181 --describe --under-replicated-partitions` (should be empty in our cluster)
 * List unavailable partitions
-  * `bin/kafka-topics.sh --zookeeper localhost:2181 --describe --under-replicated-partitions`  (should be empty in our cluster)
+  * `bin/kafka-topics.sh --zookeeper localhost:2181 --describe --unavailable-partitions`  (should be empty in our cluster)
 
 ### Consumer group monitoring
 
