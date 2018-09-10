@@ -1,6 +1,6 @@
 # Strimzi Training - Lab 5
 
-Lab 2 is using Strimzi 0.6.0. It takes you through different aspects of monitoring Strimzi.
+Lab 5 is using Strimzi 0.6.0. It takes you through different aspects of monitoring Strimzi.
 
 * Checkout this repository which will be used during the lab:
   * `git clone https://github.com/scholzj/strimzi-training.git`
