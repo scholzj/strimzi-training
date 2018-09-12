@@ -39,7 +39,7 @@ Lab 6 is using Strimzi 0.6.0. It takes you through different aspects of monitori
   * Change the Kafka log levels. For example
 
 ```yaml
-apiVersion: {KafkaApiVersion}
+apiVersion: kafka.strimzi.io/v1alpha1
 kind: Kafka
 spec:
   kafka:
@@ -64,7 +64,7 @@ spec:
   * Change the Kafka log levels. For example
 
 ```yaml
-apiVersion: {KafkaApiVersion}
+apiVersion: kafka.strimzi.io/v1alpha1
 kind: Kafka
 spec:
   kafka:
