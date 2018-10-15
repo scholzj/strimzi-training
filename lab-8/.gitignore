@@ -1,0 +1,4 @@
+kafka
+kafka*.tgz
+ca.crt
+truststore

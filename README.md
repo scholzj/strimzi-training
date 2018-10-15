@@ -23,3 +23,7 @@ Lab 5 focuses on Command line tools, Monitoring and Promethues. The lab can be f
 ## Lab 6 - Troubleshooting
 
 Lab 6 focuses on Troubleshooting. The lab can be found [here](./lab-6/).
+
+## Lab 8 - What is new between 0.6.0 and 0.8.0
+
+Lab 7 focuses on changes between Strimzi 0.6.0 and 0.8.0. The lab can be found [here](./lab-8/).
