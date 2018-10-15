@@ -23,3 +23,7 @@ Lab 5 focuses on Command line tools, Monitoring and Promethues. The lab can be f
 ## Lab 6 - Troubleshooting
 
 Lab 6 focuses on Troubleshooting. The lab can be found [here](./lab-6/).
+
+## Lab 7 - Mirror Maker
+
+Lab 7 focuses on Mirror Maker. The lab can be found [here](./lab-7/).
