@@ -1,4 +1,4 @@
-# Strimzi Training - Lab 7
+# Strimzi Training - Lab 8
 
 Lab 6 is using Strimzi 0.8.0. It takes you through the changes between Strimzi 0.6.0 and 0.8.0.
 
