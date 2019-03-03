@@ -1,11 +1,11 @@
 # Strimzi Training - Lab 8
 
-Lab 6 is using Strimzi 0.8.0. It takes you through the changes between Strimzi 0.6.0 and 0.8.0.
+Lab 8 is using Strimzi 0.8.0. It takes you through the changes between Strimzi 0.6.0 and 0.8.0.
 
 * Checkout this repository which will be used during the lab:
   * `git clone https://github.com/scholzj/strimzi-training.git`
-* Go to the `lab-7` directory
-  * `cd lab-7`
+* Go to the `lab-8` directory
+  * `cd lab-8`
 * Start you OpenShift cluster
   * You should use OpenShift 3.9 or higher
   * Run `minishift start` or `oc cluster up`
