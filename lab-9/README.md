@@ -1,6 +1,6 @@
 # Strimzi Training - Lab 9
 
-Lab 9 demonstrates upgrading upgrading the Strimzi Cluster Operator from version 0.8.1 to version 0.11.0 and then upgrading the Kafka cluster is manages from Kafka 2.0.0 to Kafka 2.1.0.
+Lab 9 demonstrates upgrading upgrading the Strimzi Cluster Operator from version 0.8.1 to version 0.11.0 and then upgrading the Kafka cluster it manages from Kafka 2.0.0 to Kafka 2.1.0.
 
 * Checkout this repository which will be used during the lab:
   * `git clone https://github.com/scholzj/strimzi-training.git`
@@ -74,7 +74,7 @@ The final stage is to upgrade the Kafka cluster to 2.1.0.
 * `oc edit kafka my-cluster`
   * Change the `version: 2.0.0` to `version: 2.1.0`.
   * Save and exit `$EDITOR`.
-* Wait for **two** rolling restarts of theKafka pods to finish.
+* Wait for **two** rolling restarts of the Kafka pods to finish.
   * `oc logs -f $(oc get po -o name | grep cluster-operator)` to follow the logs and/or `oc get po -w` to watch pod state transitions.
   
 The first rolling restart ensures each pod is using the 2.1.0 binaries. The second rolling restart reconfigures the brokers to use the 2.1.0 interbroker protocol.
