@@ -11,6 +11,9 @@ Lab 10 is using Strimzi 0.11.0. It takes you through the changes between Strimzi
   * Run `minishift start` or `oc cluster up`
 * Login as cluster administrator
   * `oc login -u system:admin`
+* If you are not in a project `myproject`, create it and set it as active
+  * `oc new-project myproject`
+  * `oc project myproject`
 * Install the Cluster Operator
   * `oc apply -f install/`
 
@@ -36,7 +39,7 @@ _This demo should be done on a cluster with enabled network policies SDN plugin.
 * Check the cluster deployment in `network-policies/kafka.yaml`
   * Notice the `networkPolicyPeers` fields with the definitions of peers which are allowed to connect
 * Apply the Kafka resource
-  * `oc apply -f network-policies//kafka.yaml`
+  * `oc apply -f network-policies/kafka.yaml`
 * Once the cluster is created, check the network policies
   * List all network policies `oc get networkpolicies`
   * Check the Zookeeper network policies in detail: `oc describe networkpolicy my-cluster-network-policy-zookeeper`
@@ -115,7 +118,7 @@ _This demo should be done on a cluster with enabled network policies SDN plugin.
   * Create the connector:
     `curl -X POST -H "Content-Type: application/json" --data '{ "name": "sink-test", "config": { "connector.class": "FileStreamSink", "tasks.max": "3", "topics": "my-topic", "file": "/tmp/test.sink.txt", "username":"${file:/opt/kafka/external-configuration/my-properties-secret/credentials.properties:username}","password":"${file:/opt/kafka/external-configuration/my-properties-secret/credentials.properties:password" } }' http://localhost:8083/connectors`
   * Notice the `username` and `password` options set from the file
-    * `"username":"${file:/opt/kafka/external-configuration/my-properties-secret/credentials.properties:username}"`
+    * `"username":"${file:/opt/kafka/external-configuration/my-properties-secret/credentials.properties:username"`
     * `"password":"${file:/opt/kafka/external-configuration/my-properties-secret/credentials.properties:password"`
 * Delete the Kafka and Kafka Connect clusters
   * `oc delete kafkaconnect my-connect`

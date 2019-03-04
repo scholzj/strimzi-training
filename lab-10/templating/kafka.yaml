@@ -8,16 +8,8 @@ spec:
   kafka:
     replicas: 3
     listeners:
-      plain:
-        authentication:
-          type: scram-sha-512
-      tls:
-        authentication:
-          type: tls
-      external:
-        type: route
-        authentication:
-          type: tls
+      plain: {}
+      tls: {}
     storage:
       type: ephemeral
     template:
