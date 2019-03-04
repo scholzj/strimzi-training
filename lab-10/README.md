@@ -124,10 +124,54 @@ _This demo should be done on a cluster with enabled network policies SDN plugin.
   * `oc delete kafkaconnect my-connect`
   * `oc delete kafka my-cluster`
 
+## JBOD Storage
 
+* Check the cluster deployment in `jbod/kafka.yaml`
+  * Notice the `storage` section in `.spec.kafka`
+  * It defines two persistent disks
+* Apply the Kafka resource
+  * `oc apply -f jbod/kafka.yaml`
+* Check the volumes which were created
+  * You should see 6 Persistent Volume Claims (+3 for Zookeeper): `oc get pvc`
+  * You should see 6 Persistent Volume (+3 for Zookeeper): `oc get pv | grep Bound`
+  * Exec into the pod and check how the volumes are mounted and configured
+    * Open a terminal inside the pod `oc exec -ti my-cluster-kafka-0 -- bash`
+    * Check the `/var/lib/kafka` directory and the configuration file in `/tmp/strimzi.properties` (look for the `log.dirs` property)
+* Delete the Kafka cluster
+  * `oc delete kafka my-cluster`
 
+## Watching all namespaces
 
+* Check your current configuration of the Cluster Operator
+  * You will see that it is right now only watching its own namespace
 
+```yaml
+        - name: STRIMZI_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+```
 
+* Give the Cluster Operator additional RBAC rights
+  * These rights give the Cluster Operator access to all namespaces / projects
+  * `oc adm policy add-cluster-role-to-user strimzi-cluster-operator-namespaced --serviceaccount strimzi-cluster-operator -n myproject`
+  * `oc adm policy add-cluster-role-to-user strimzi-entity-operator --serviceaccount strimzi-cluster-operator -n myproject`
+  * `oc adm policy add-cluster-role-to-user strimzi-topic-operator --serviceaccount strimzi-cluster-operator -n myproject`
+* Change the confgiuratoin of the Cluster Operator
+  * Set the value of the `STRIMZI_NAMESPACE` environment variable to `*`
+  * `oc set env deployment/strimzi-cluster-operator STRIMZI_NAMESPACE="*"`
 
+```yaml
+        - name: STRIMZI_NAMESPACE
+          value: "*"
+```
 
+* Wait for the Cluster Operator to redeploy
+* Create new project my-kafka and set it as default if needed
+  * `oc new-project my-kafka`
+* Deploy a Kafka cluster into the new namespace / project
+  * `oc apply -f connect-secrets/kafka.yaml`
+* Check how without any forther changes the Kafka cluster is being deployed into the new namespace / project
+  * `oc get pods -w`
+* Delete the Kafka and Kafka Connect clusters
+  * `oc delete kafka my-cluster`

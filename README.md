@@ -38,4 +38,12 @@ Lab 9 focuses on upgrade of Strimzi from 0.8.0 to 0.11.0 and from Kafka 2.0.0 to
 
 ## Lab 10 - What is new between 0.8.0 and 0.11.0
 
-Lab 10 focuses on changes between Strimzi 0.8.0 and 0.11.0. The lab can be found [here](./lab-10/).
+Lab 10 focuses on changes between Strimzi 0.8.0 and 0.11.0:
+
+* Templating
+* Network Policies
+* Handling Secrets in Kafka Connect
+* JBOD Storage
+* Watching all namespace
+
+The lab can be found [here](./lab-10/).
