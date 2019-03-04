@@ -1,0 +1,146 @@
+apiVersion: kafka.strimzi.io/v1alpha1
+kind: Kafka
+metadata:
+  name: my-cluster
+  labels:
+    app: my-cluster
+spec:
+  kafka:
+    replicas: 3
+    listeners:
+      plain:
+        authentication:
+          type: scram-sha-512
+      tls:
+        authentication:
+          type: tls
+      external:
+        type: route
+        authentication:
+          type: tls
+    storage:
+      type: ephemeral
+    template:
+      statefulset:
+        metadata:
+          labels:
+            key1: label1
+            key2: label2
+          annotations:
+            key1: label1
+            key2: label2
+      pod:
+        metadata:
+          labels:
+            key1: label1
+            key2: label2
+          annotations:
+            key1: label1
+            key2: label2
+        terminationGracePeriodSeconds: 120
+      bootstrapService:
+        metadata:
+          labels:
+            key1: label1
+            key2: label2
+          annotations:
+            akey1: label1
+            akey2: label2
+      brokersService:
+        metadata:
+          labels:
+            key1: label1
+            key2: label2
+          annotations:
+            akey1: label1
+            akey2: label2
+      externalBootstrapService:
+        metadata:
+          labels:
+            key1: label1
+            key2: label2
+          annotations:
+            akey1: label1
+            akey2: label2
+      perPodService:
+        metadata:
+          labels:
+            key1: label1
+            key2: label2
+          annotations:
+            akey1: label1
+            akey2: label2
+      externalBootstrapRoute:
+        metadata:
+          labels:
+            key1: label1
+            key2: label2
+          annotations:
+            akey1: label1
+            akey2: label2
+      perPodRoute:
+        metadata:
+          labels:
+            key1: label1
+            key2: label2
+          annotations:
+            akey1: label1
+            akey2: label2
+  zookeeper:
+    replicas: 3
+    storage:
+      type: ephemeral
+    template:
+      statefulset:
+        metadata:
+          labels:
+            key1: label1
+            key2: label2
+          annotations:
+            akey1: label1
+            akey2: label2
+      pod:
+        metadata:
+          labels:
+            key1: label1
+            key2: label2
+          annotations:
+            akey1: label1
+            akey2: label2
+        terminationGracePeriodSeconds: 60
+      clientService:
+        metadata:
+          labels:
+            key1: label1
+            key2: label2
+          annotations:
+            akey1: label1
+            akey2: label2
+      nodesService:
+        metadata:
+          labels:
+            key1: label1
+            key2: label2
+          annotations:
+            akey1: label1
+            akey2: label2
+  entityOperator:
+    topicOperator: {}
+    userOperator: {}
+    template:
+      deployment:
+        metadata:
+          labels:
+            key1: label1
+            key2: label2
+          annotations:
+            akey1: label1
+            akey2: label2
+      pod:
+        metadata:
+          labels:
+            key1: label1
+            key2: label2
+          annotations:
+            akey1: label1
+            akey2: label2

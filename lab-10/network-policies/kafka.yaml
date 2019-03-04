@@ -1,0 +1,47 @@
+apiVersion: kafka.strimzi.io/v1alpha1
+kind: Kafka
+metadata:
+  name: my-cluster
+  labels:
+    app: my-cluster
+spec:
+  kafka:
+    replicas: 3
+    listeners:
+      plain:
+        networkPolicyPeers:
+          - podSelector:
+              matchLabels:
+                app: kafka-consumer
+          - podSelector:
+              matchLabels:
+                app: kafka-producer
+          - podSelector:
+              matchLabels:
+                app: my-connect
+          - podSelector:
+              matchLabels:
+                app: my-connect-s2i
+      tls:
+        networkPolicyPeers:
+          - podSelector:
+              matchLabels:
+                app: kafka-consumer
+          - podSelector:
+              matchLabels:
+                app: kafka-producer
+          - podSelector:
+              matchLabels:
+                app: my-connect
+          - podSelector:
+              matchLabels:
+                app: my-connect-s2i
+    storage:
+      type: ephemeral
+  zookeeper:
+    replicas: 3
+    storage:
+      type: ephemeral
+  entityOperator:
+    topicOperator: {}
+    userOperator: {}
