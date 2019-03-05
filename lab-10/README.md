@@ -56,12 +56,12 @@ _This demo should be done on a cluster with enabled network policies SDN plugin.
 * Check the Kafka network policies again to see that the change was applied
   * `oc describe networkpolicy my-cluster-network-policy-kafka`
 * Try to run a message producer or consumer with the matching labels:
-  * `oc run kafka-producer -ti --image=strimzi/kafka:0.11.0-kafka-2.1.0 --rm=true -l app=kafka-producer --restart=Never -- bin/kafka-console-producer.sh --broker-list my-cluster-kafka-bootstrap:9092 --topic my-topic`
-  * `oc run kafka-consumer -ti --image=strimzi/kafka:0.11.0-kafka-2.1.0 --rm=true -l app=kafka-consumer --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic --from-beginning`
+  * `oc run kafka-producer -ti --image=strimzi/kafka:0.11.1-kafka-2.1.0 --rm=true -l app=kafka-producer --restart=Never -- bin/kafka-console-producer.sh --broker-list my-cluster-kafka-bootstrap:9092 --topic my-topic`
+  * `oc run kafka-consumer -ti --image=strimzi/kafka:0.11.1-kafka-2.1.0 --rm=true -l app=kafka-consumer --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic --from-beginning`
   * These should work fine because they are allowed
 * Try to run a message producer or consumer without the matching labels:
-  * `oc run kafka-producer -ti --image=strimzi/kafka:0.11.0-kafka-2.1.0 --rm=true -l app=some-producer --restart=Never -- bin/kafka-console-producer.sh --broker-list my-cluster-kafka-bootstrap:9092 --topic my-topic`
-  * `oc run kafka-consumer -ti --image=strimzi/kafka:0.11.0-kafka-2.1.0 --rm=true -l app=some-consumer --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic --from-beginning`
+  * `oc run kafka-producer -ti --image=strimzi/kafka:0.11.1-kafka-2.1.0 --rm=true -l app=some-producer --restart=Never -- bin/kafka-console-producer.sh --broker-list my-cluster-kafka-bootstrap:9092 --topic my-topic`
+  * `oc run kafka-consumer -ti --image=strimzi/kafka:0.11.1-kafka-2.1.0 --rm=true -l app=some-consumer --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic --from-beginning`
   * These should not work when network policies are enabled
 * Delete the Kafka cluster
   * `oc delete kafka my-cluster`
@@ -170,7 +170,7 @@ _This demo should be done on a cluster with enabled network policies SDN plugin.
 * Create new project my-kafka and set it as default if needed
   * `oc new-project my-kafka`
 * Deploy a Kafka cluster into the new namespace / project
-  * `oc apply -f connect-secrets/kafka.yaml`
+  * `oc apply -f all-namespaces/kafka.yaml`
 * Check how without any forther changes the Kafka cluster is being deployed into the new namespace / project
   * `oc get pods -w`
 * Delete the Kafka and Kafka Connect clusters

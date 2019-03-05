@@ -29,7 +29,7 @@ spec:
           annotations:
             key1: label1
             key2: label2
-        terminationGracePeriodSeconds: 120
+        terminationGracePeriodSeconds: 60
       bootstrapService:
         metadata:
           labels:
