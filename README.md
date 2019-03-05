@@ -34,7 +34,7 @@ Lab 8 focuses on changes between Strimzi 0.6.0 and 0.8.0. The lab can be found [
 
 ## Lab 9 - Kafka and Strimzi upgrades
 
-Lab 9 focuses on upgrade of Strimzi from 0.8.0 to 0.11.0 and from Kafka 2.0.0 to 2.1.1. The lab can be found [here](./lab-9/).
+Lab 9 focuses on upgrade of Strimzi from 0.8.1 to 0.11.1 and from Kafka 2.0.0 to 2.1.1. The lab can be found [here](./lab-9/).
 
 ## Lab 10 - What is new between 0.8.0 and 0.11.0
 
