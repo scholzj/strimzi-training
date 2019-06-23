@@ -171,7 +171,7 @@ _This demo should be done on a cluster with enabled network policies SDN plugin.
   * `oc new-project my-kafka`
 * Deploy a Kafka cluster into the new namespace / project
   * `oc apply -f all-namespaces/kafka.yaml`
-* Check how without any forther changes the Kafka cluster is being deployed into the new namespace / project
+* Check how without any further changes the Kafka cluster is being deployed into the new namespace / project
   * `oc get pods -w`
 * Delete the Kafka and Kafka Connect clusters
   * `oc delete kafka my-cluster`
