@@ -48,9 +48,9 @@ Lab 10 focuses on changes between Strimzi 0.8.0 and 0.11.0:
 
 The lab can be found [here](./lab-10/).
 
-## Lab 11 - What is new in 0.12.0 / AMQ Streams 1.2.0
+## Lab 11 - What is new in 0.12.1 / AMQ Streams 1.2.0
 
-Lab 11 focuses on changes in Strimzi 0.12.0 / AMQ Streams 1.2.0:
+Lab 11 focuses on changes in Strimzi 0.12.1 / AMQ Streams 1.2.0:
 
 * Custom resource improvements
 * Adding and removing JBOD volumes

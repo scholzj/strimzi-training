@@ -1,7 +1,7 @@
 # Strimzi Training - Lab 11
 
-Lab 11 is using Strimzi 0.12.0. It takes you through the changes in Strimzi 0.12.0 (AMQ Streams 1.2).
-**Since 0.12.0, only Kubernetes 1.11 and newer or OpenShift 3.11 or newer are supported.**
+Lab 11 is using Strimzi 0.12.1. It takes you through the changes in Strimzi 0.12.1 (AMQ Streams 1.2).
+**Since 0.12.1, only Kubernetes 1.11 and newer or OpenShift 3.11 or newer are supported.**
 
 * Checkout this repository which will be used during the lab:
   * `git clone https://github.com/scholzj/strimzi-training.git`
@@ -27,8 +27,8 @@ Lab 11 is using Strimzi 0.12.0. It takes you through the changes in Strimzi 0.12
   * `oc apply -f install-0.11.4/`
 * Install an old Kafka cluster with version `v1alpha1`
   * `oc apply -f old-kafka.yaml`
-* Update the CO to Strimzi 0.12.0 / AMQ Streams 1.2
-  * `oc apply -f install-0.12.0/`
+* Update the CO to Strimzi 0.12.1 / AMQ Streams 1.2
+  * `oc apply -f install-0.12.1/`
   * Wait for the rolling update to finish
 * Check the custom resource
   * `oc edit kafka my-cluster`
@@ -47,7 +47,7 @@ spec:
 
 ### Status sub-resource
 
-* Once the resource is upgraded to `v1beta1` (or with all resources created after the 0.12.0 upgrade), you can check the status
+* Once the resource is upgraded to `v1beta1` (or with all resources created after the 0.12.1 upgrade), you can check the status
   * Do `oc get kafka my-cluster -o yaml` and notice the last section of the output
   * Check the conditions
   * Check the addresses
@@ -245,5 +245,5 @@ curl -X GET $BRIDGE/consumers/debezium-group/instances/debezium-consumer/records
 ```
 * You can also consume the messages using a regular Kafka client:
 ```sh
-oc run kafka-consumer -ti --image=strimzi/kafka:0.12.0-kafka-2.2.1 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic dbserver1.inventory.customers --from-beginning --property print.key=true --property key.separator=" - "
+oc run kafka-consumer -ti --image=strimzi/kafka:0.12.1-kafka-2.2.1 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic dbserver1.inventory.customers --from-beginning --property print.key=true --property key.separator=" - "
 ```
