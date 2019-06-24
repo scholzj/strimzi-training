@@ -1,0 +1,102 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mysql
+  labels:
+    app: mysql
+    component: mysql
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: debezium
+        - name: MYSQL_USER
+          value: mysqluser
+        - name: MYSQL_PASSWORD
+          value: mysqlpw
+        image: debezium/example-mysql:0.9
+        imagePullPolicy: IfNotPresent
+        name: mysql
+        ports:
+        - containerPort: 3306
+          protocol: TCP
+        - containerPort: 33060
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: mysql-volume-1
+      volumes:
+      - emptyDir: {}
+        name: mysql-volume-1
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  labels:
+    app: mysql
+spec:
+  type: ClusterIP
+  ports:
+  - name: mysql
+    port: 3306
+  - name: mysql0
+    port: 33060
+  selector:
+    app: mysql
+---
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: db-adress-book
+  labels:
+    app: db-adress-book
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: db-adress-book
+    spec:
+      containers:
+      - image: quay.io/scholzj/demo-kafka-and-its-friends-2019:db-address-book
+        imagePullPolicy: IfNotPresent
+        name: db-adress-book
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-adress-book
+  labels:
+    app: db-adress-book
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8080
+  selector:
+    app: db-adress-book
+---
+
+apiVersion: v1
+kind: Route
+metadata:
+  name: db-adress-book
+  labels:
+    app: db-adress-book
+spec:
+  to:
+    kind: Service
+    name: db-adress-book

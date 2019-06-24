@@ -1,0 +1,13 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: my-bridge
+  labels:
+    app: my-bridge
+spec:
+  port:
+    targetPort: 8080
+  to:
+    kind: Service
+    name: my-bridge-bridge-service
+    weight: 100
