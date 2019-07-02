@@ -11,6 +11,8 @@ Lab 3 is using Strimzi 0.6.0. It takes you through the topic and user management
   * Run `minishift start` or `oc cluster up`
 * Login as cluster administrator
   * `oc login -u system:admin`
+* Create a new project
+  * `oc new-project myproject`
 * Install the Cluster Operator
   * `oc apply -f install/`
 
