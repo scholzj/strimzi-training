@@ -59,3 +59,15 @@ Lab 11 focuses on changes in Strimzi 0.12.1 / AMQ Streams 1.2.0:
 * Debezium
 
 The lab can be found [here](./lab-11/).
+
+## Lab 12 - What is new in 0.14.0 / AMQ Streams 1.3.0
+
+Lab 12 focuses on changes in Strimzi 0.14.0 / AMQ Streams 1.3.0:
+
+* Status sub-resource available for all custom resources
+* Support for Kafka Exporter to enhance Prometheus metrics
+* Support for OAuth authentication (Tech Preview)
+* Passing environment variables to containers
+* Support for Tracing using OpenTracing and Jaeger (Tech Preview)
+
+The lab can be found [here](./lab-12/).
