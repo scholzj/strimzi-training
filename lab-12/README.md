@@ -103,3 +103,29 @@ Strimzi 0.14.0 is used as a basis for AMQ Streams 1.3.0 and all features are ide
   * `oc delete -f ./`
   * `oc delete -f ./prometheus-grafana`
 
+## Environment Variables
+
+_Note: I do not think changing the timezone of your logs is a good idea, you should use UTC time. But it serves well to demonstrate the environment variables. :-o_
+
+* Go to the `environment-variables` directory
+  * `environment-variables`
+* Deploy Kafka cluster with default configuration
+  * `oc apply -f kafka.yaml`
+  * And wait for it to get ready
+    * `oc wait kafka/my-cluster --for=condition=Ready --timeout=300s`
+* Check the logs of all pods
+  * All timestamps should be in UTC time
+  * e.g. `oc logs my-cluster-zookeeper-0 -c zookeeper`
+* Deploy Kafka cluster with Europe / Prague timezone
+  * Check the `kafka-prague-timezone.yaml` file and notices how the `TZ` environment variable is configured for every container
+  * `oc apply -f kafka-prague-timezone.yaml`
+  * Wait for the rolling update to be finished
+* Check the logs of all pods
+  * All timestamps should be in UTC time
+  * e.g. `oc logs my-cluster-zookeeper-0 -c zookeeper`
+* Check that the environment variable is indeed set
+  * `oc exec my-cluster-zookeeper-0 -c zookeeper -- env | grep TZ`
+  * You should see `TZ=Europe/Prague`
+* _On your own: Try to set environment variable conflicting with some Strimzi / AMQ Streams variable and see that it is ignored. E.g. `ZOOKEEPER_NODE_COUNT` for Zookeeper container._
+* Once you are finished, you can delete everything
+  * `oc delete -f ./`

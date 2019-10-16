@@ -1,0 +1,64 @@
+apiVersion: kafka.strimzi.io/v1beta1
+kind: Kafka
+metadata:
+  name: my-cluster
+spec:
+  kafka:
+    version: 2.3.0
+    replicas: 3
+    listeners:
+      plain: {}
+      tls: {}
+    config:
+      offsets.topic.replication.factor: 3
+      transaction.state.log.replication.factor: 3
+      transaction.state.log.min.isr: 2
+      log.message.format.version: "2.3"
+    storage:
+      type: jbod
+      volumes:
+      - id: 0
+        type: persistent-claim
+        size: 100Gi
+        deleteClaim: false
+    template:
+      tlsSidecarContainer:
+        env:
+          - name: TZ
+            value: Europe/Prague
+      kafkaContainer:
+        env:
+          - name: TZ
+            value: Europe/Prague
+  zookeeper:
+    replicas: 3
+    storage:
+      type: persistent-claim
+      size: 100Gi
+      deleteClaim: false
+    template:
+      tlsSidecarContainer:
+        env:
+          - name: TZ
+            value: Europe/Prague
+      zookeeperContainer:
+        env:
+          - name: TZ
+            value: Europe/Prague
+  entityOperator:
+    topicOperator: {}
+    userOperator: {}
+    template:
+      topicOperatorContainer:
+        env:
+          - name: TZ
+            value: Europe/Prague
+      userOperatorContainer:
+        env:
+          - name: TZ
+            value: Europe/Prague
+      tlsSidecarContainer:
+        env:
+          - name: TZ
+            value: Europe/Prague
+
