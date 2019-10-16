@@ -1,0 +1,109 @@
+# This is not a recommended configuration, and further support should be available
+# from the Prometheus and Grafana communities.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  labels:
+    app: prometheus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: grafana
+  template:
+    metadata:
+      labels:
+        name: grafana
+    spec:
+      containers:
+      - name: grafana
+        image: strimzilab/grafana-openshift:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: GF_SECURITY_ADMIN_USER
+          value: admin
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          value: "123456"
+        ports:
+        - name: grafana
+          containerPort: 3000
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 30
+          timeoutSeconds: 30
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/grafana
+        - name: dashboards-volume
+          mountPath: /var/lib/grafana/dashboards
+        - name: dashboard-provider
+          mountPath: /etc/grafana/provisioning/dashboards
+        - name: datasources-provider
+          mountPath: /etc/grafana/provisioning/datasources
+        - name: grafana-data
+          mountPath: /var/lib/grafana
+        - name: grafana-logs
+          mountPath: /var/log/grafana
+      volumes:
+      - name: config-volume
+        configMap:
+          name: grafana-config
+      - name: dashboards-volume
+        configMap:
+          name: grafana-dashboards
+      - name: dashboard-provider
+        configMap:
+          name: grafana-dashboard-provider
+          items:
+          - key: providers.yaml
+            path: providers.yaml
+      - name: datasources-provider
+        configMap:
+          name: grafana-datasources-provider
+          items:
+          - key: providers.yaml
+            path: providers.yaml
+      - name: grafana-data
+        emptyDir: {}
+      - name: grafana-logs
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  labels:
+    app: prometheus
+spec:
+  ports:
+  - name: grafana
+    port: 3000
+    targetPort: 3000
+    protocol: TCP
+  selector:
+    name: grafana
+  type: ClusterIP
+
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: grafana
+  labels:
+    app: prometheus
+spec:
+  port:
+    targetPort: grafana
+  to:
+    kind: Service
+    name: grafana
+    weight: 100

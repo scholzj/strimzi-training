@@ -1,0 +1,55 @@
+#
+# Based on https://github.com/heptio/gimbal/blob/master/deployment/grafana/02-grafana-configmap.yaml
+#
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app: prometheus
+  name: grafana-config
+data:
+  grafana.ini: |
+    [dashboards.json]
+    enabled = true
+    path = /var/lib/grafana/dashboards
+
+    [paths]
+    provisioning = /etc/grafana/provisioning
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app: prometheus
+  name: grafana-dashboard-provider
+data:
+  providers.yaml: |
+    apiVersion: 1
+    providers:
+    - name: 'default'
+      orgId: 1
+      folder: ''
+      type: file
+      disableDeletion: false
+      editable: false
+      options:
+        path: /var/lib/grafana/dashboards
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app: prometheus
+  name: grafana-datasources-provider
+data:
+  providers.yaml: |
+    apiVersion: 1
+    datasources:
+    - name: 'prometheus'
+      type: prometheus
+      access: proxy
+      orgId: 1
+      url: http://prometheus:9090
+      isDefault: true
+      editable: false

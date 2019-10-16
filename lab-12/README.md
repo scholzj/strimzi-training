@@ -71,5 +71,35 @@ Strimzi 0.14.0 is used as a basis for AMQ Streams 1.3.0 and all features are ide
 * Now with the target Kafka cluster running, check the Kafka Mirror Maker again
   * `oc get kafkamirrormaker mirror-maker -o yaml`
   * It should transition to `Ready` state and the status should change (the exponential back-off might mean that it takes it longer to catch-up - you can speed it up by deleting the pod manually)
+* _On your own: Try to trigger different errors by modifying the different custom resources and see how the status can change._
 * Once you are finished, you can delete everything
   * `oc delete -f ./`
+
+## Kafka Exporter
+
+* Go to the `kafka-exporter` directory
+  * `cd kafka-exporter`
+* Deploy Prometheus, Grafana and Grafana dashboards
+  * `oc apply -f prometheus-grafana/`
+* Deploy a Kafka cluster with the Kafka Exporter enabled
+  * `oc apply -f kafka.yaml`
+  * And wait for it to get ready
+    * `oc wait kafka/my-cluster --for=condition=Ready --timeout=300s`
+* Deploy the clients
+  * `oc apply -f clients.yaml`
+* Go to Grafana
+  * On OpenShift it should be exposed using a route
+  * Login (username: `admin`, password: `123456`)
+  * Check the Kafka and Kafka Exporter dashboards
+  * You should see minimal consumer lag for the `hello-world-consumer` (`hello-world-streams` is based on Streams API and will show some lag)
+  * Scale down the consumer to 0 replicas (stop it)
+    * `oc scale deployment hello-world-consumer --replicas=0`
+  * Check in the Kafka Exporter dashboard how the consumer lag starts increasing
+  * Scale the consumer back to 1 (or more) replicas
+    * `oc scale deployment hello-world-consumer --replicas=1`
+  * Check in the Kafka Exporter dashboard how the consumer lag decreases again
+* _On your own: Check the other dashboards, check the offsets etc._
+* Once you are finished, you can delete everything
+  * `oc delete -f ./`
+  * `oc delete -f ./prometheus-grafana`
+
