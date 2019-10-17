@@ -1,0 +1,105 @@
+apiVersion: kafka.strimzi.io/v1alpha1
+kind: KafkaUser
+metadata:
+  name: service-account-kafka-bridge
+  labels:
+    strimzi.io/cluster: my-cluster
+spec:
+  authorization:
+    type: simple
+    acls:
+      - resource:
+          type: topic
+          name: kafka-test-apps
+        operation: Write
+      - resource:
+          type: topic
+          name: kafka-test-apps
+        operation: Create
+      - resource:
+          type: topic
+          name: kafka-test-apps
+        operation: Describe
+      - resource:
+          type: topic
+          name: kafka-test-apps
+        operation: Read
+      - resource:
+          type: topic
+          name: kafka-test-apps
+        operation: Describe
+      - resource:
+          type: topic
+          name: my-topic
+        operation: Write
+      - resource:
+          type: topic
+          name: my-topic
+        operation: Create
+      - resource:
+          type: topic
+          name: my-topic
+        operation: Describe
+      - resource:
+          type: topic
+          name: my-topic
+        operation: Read
+      - resource:
+          type: topic
+          name: my-topic
+        operation: Describe
+      - resource:
+          type: group
+          name: my-bridge
+        operation: Read
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-bridge-oauth
+type: Opaque
+data:
+  clientSecret: a2Fma2EtYnJpZGdlLXNlY3JldA==
+---
+
+apiVersion: kafka.strimzi.io/v1alpha1
+kind: KafkaBridge
+metadata:
+  name: my-bridge
+  labels:
+    app: my-bridge
+spec:
+  replicas: 1
+  bootstrapServers: my-cluster-kafka-bootstrap:9093
+  http:
+    port: 8080
+  tls:
+    trustedCertificates:
+    - secretName: my-cluster-cluster-ca-cert
+      certificate: ca.crt
+  authentication:
+    type: oauth
+    tokenEndpointUri: https://sso.myproject.svc:8443/auth/realms/internal/protocol/openid-connect/token
+    clientId: kafka-bridge
+    clientSecret:
+      secretName: my-bridge-oauth
+      key: clientSecret
+    tlsTrustedCertificates:
+      - secretName: sso-x509-https-secret
+        certificate: tls.crt
+---
+
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: my-bridge
+  labels:
+    app: my-bridge
+spec:
+  port:
+    targetPort: 8080
+  to:
+    kind: Service
+    name: my-bridge-bridge-service
+    weight: 100

@@ -103,6 +103,41 @@ Strimzi 0.14.0 is used as a basis for AMQ Streams 1.3.0 and all features are ide
   * `oc delete -f ./`
   * `oc delete -f ./prometheus-grafana`
 
+## OAuth
+
+* Go to the `oauth` directory
+  * `cd oauth`
+* Deploy Keycloak / RH-SSO (the script provided below works only on OpenShift)
+  * `./install-keycloak.sh
+  * Save the username and password provided by the installation script
+  * Wait until the Keycloak deployment is finished
+* Log in to the Keycloak Administration console (use the route to access it)
+  * Hover with mouse over the left top corner title _Master_ and click _Add Realm_
+  * And import the Realm from the attached file [`keycloak-realm.json`]()./lab-12/oauth/keycloak-realm.json)
+  * Check the different clients in the _Clients_ section
+* Deploy Kafka broker with OAuth authentication
+  * `oc apply -f kafka.yaml`
+  * And wait for it to get ready
+    * `oc wait kafka/my-cluster --for=condition=Ready --timeout=300s`
+* Deploy the clients
+  * `oc apply -f clients.yaml`
+  * Check the YAML file to see:
+    * How it passes the Client Secret using a Kubernetes secret
+    * How it uses the `KafkaUser` resource to manage the ACLs for the OAuth user
+  * Check the source code to see how the OAuth is configured in the clients
+    * All source codes are in [https://github.com/strimzi/client-examples](https://github.com/strimzi/client-examples)
+    * Check the file [KafkaProducerConfig.java](https://github.com/strimzi/client-examples/blob/09b49a10dfb9cd472d0691cd1a6cf54eefe57ac3/hello-world-producer/src/main/java/KafkaProducerConfig.java#L86) to see in detail how is it configured in the producer
+  * Check the logs to see that the clients work
+* OAuth is also supported in all your components - as an example let's try it with HTTP Bridge
+  * `oc apply -f bridge.yaml`
+  * Wait for the bridge to be `Ready`
+    * `oc wait kafkabridge/my-bridge --for=condition=Ready --timeout=300s`
+  * You can use the script `receive-messages-with-http.sh` to see if it works
+    * `./receive-messages-with-http.sh`
+* _On your own: Try to deploy other components with OAuth or create your own clients for your own consumers & producers._
+* Once you are finished, you can delete everything
+  * `oc delete -f ./`
+
 ## Environment Variables
 
 _Note: I do not think changing the timezone of your logs is a good idea, you should use UTC time. But it serves well to demonstrate the environment variables. :-o_

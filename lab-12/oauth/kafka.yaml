@@ -1,0 +1,59 @@
+apiVersion: kafka.strimzi.io/v1beta1
+kind: Kafka
+metadata:
+  name: my-cluster
+  labels:
+    app: my-cluster
+spec:
+  kafka:
+    replicas: 3
+    jvmOptions:
+      gcLoggingEnabled: false
+    listeners:
+      plain:
+        authentication:
+          type: oauth
+          validIssuerUri: https://sso.myproject.svc:8443/auth/realms/internal
+          jwksEndpointUri: https://sso.myproject.svc:8443/auth/realms/internal/protocol/openid-connect/certs
+          userNameClaim: preferred_username
+          tlsTrustedCertificates:
+            - secretName: sso-x509-https-secret
+              certificate: tls.crt
+      tls:
+        authentication:
+          type: oauth
+          validIssuerUri: https://sso.myproject.svc:8443/auth/realms/internal
+          jwksEndpointUri: https://sso.myproject.svc:8443/auth/realms/internal/protocol/openid-connect/certs
+          userNameClaim: preferred_username
+          tlsTrustedCertificates:
+            - secretName: sso-x509-https-secret
+              certificate: tls.crt
+    authorization:
+      type: simple
+    config:
+      auto.create.topics.enable: "false"
+      offsets.topic.replication.factor: 3
+      transaction.state.log.replication.factor: 3
+      transaction.state.log.min.isr: 2
+    storage:
+      type: jbod
+      volumes:
+      - id: 0
+        type: persistent-claim
+        size: 100Gi
+        deleteClaim: true
+  zookeeper:
+    replicas: 3
+    jvmOptions:
+      gcLoggingEnabled: false
+    storage:
+      type: persistent-claim
+      size: 100Gi
+      deleteClaim: true
+  entityOperator:
+    topicOperator:
+      jvmOptions:
+        gcLoggingEnabled: false
+    userOperator:
+      jvmOptions:
+        gcLoggingEnabled: false
