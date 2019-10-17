@@ -1,0 +1,167 @@
+apiVersion: kafka.strimzi.io/v1alpha1
+kind: KafkaTopic
+metadata:
+  name: my-topic
+  labels:
+      strimzi.io/cluster: source-cluster
+spec:
+  replicas: 1
+  partitions: 12
+---
+apiVersion: kafka.strimzi.io/v1beta1
+kind: KafkaUser
+metadata:
+  name: hello-world-producer
+  labels:
+    strimzi.io/cluster: source-cluster
+spec:
+  authentication:
+    type: tls
+  authorization:
+    type: simple
+    acls:
+      - resource:
+          type: topic
+          name: my-topic
+        operation: Write
+      - resource:
+          type: topic
+          name: my-topic
+        operation: Create
+      - resource:
+          type: topic
+          name: my-topic
+        operation: Describe
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: hello-world-producer
+  name: hello-world-producer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-world-producer
+  template:
+    metadata:
+      labels:
+        app: hello-world-producer
+    spec:
+      containers:
+      - name: hello-world-producer
+        image: strimzi/hello-world-producer:latest
+        env:
+          - name: CA_CRT
+            valueFrom:
+              secretKeyRef:
+                name: source-cluster-cluster-ca-cert
+                key: ca.crt
+          - name: USER_CRT
+            valueFrom:
+              secretKeyRef:
+                name: hello-world-producer
+                key: user.crt
+          - name: USER_KEY
+            valueFrom:
+              secretKeyRef:
+                name: hello-world-producer
+                key: user.key
+          - name: BOOTSTRAP_SERVERS
+            value: source-cluster-kafka-bootstrap:9093
+          - name: TOPIC
+            value: my-topic
+          - name: DELAY_MS
+            value: "1000"
+          - name: LOG_LEVEL
+            value: "INFO"
+          - name: MESSAGE_COUNT
+            value: "1000000"
+          - name: JAEGER_SERVICE_NAME
+            value: hello-world-producer
+          - name: JAEGER_AGENT_HOST
+            value: my-jaeger-agent
+          - name: JAEGER_SAMPLER_TYPE
+            value: const
+          - name: JAEGER_SAMPLER_PARAM
+            value: "1"
+---
+apiVersion: kafka.strimzi.io/v1beta1
+kind: KafkaUser
+metadata:
+  name: hello-world-consumer
+  labels:
+    strimzi.io/cluster: target-cluster
+spec:
+  authentication:
+    type: tls
+  authorization:
+    type: simple
+    acls:
+      - resource:
+          type: topic
+          name: my-topic
+        operation: Read
+      - resource:
+          type: topic
+          name: my-topic
+        operation: Describe
+      - resource:
+          type: group
+          name: hello-world
+        operation: Read
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: hello-world-consumer
+  name: hello-world-consumer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-world-consumer
+  template:
+    metadata:
+      labels:
+        app: hello-world-consumer
+    spec:
+      containers:
+      - name: hello-world-consumer
+        image: strimzi/hello-world-consumer:latest
+        env:
+          - name: CA_CRT
+            valueFrom:
+              secretKeyRef:
+                name: target-cluster-cluster-ca-cert
+                key: ca.crt
+          - name: USER_CRT
+            valueFrom:
+              secretKeyRef:
+                name: hello-world-consumer
+                key: user.crt
+          - name: USER_KEY
+            valueFrom:
+              secretKeyRef:
+                name: hello-world-consumer
+                key: user.key
+          - name: BOOTSTRAP_SERVERS
+            value: target-cluster-kafka-bootstrap:9093
+          - name: TOPIC
+            value: my-topic
+          - name: GROUP_ID
+            value: hello-world-consumer
+          - name: LOG_LEVEL
+            value: "INFO"
+          - name: MESSAGE_COUNT
+            value: "1000000"
+          - name: JAEGER_SERVICE_NAME
+            value: hello-world-consumer
+          - name: JAEGER_AGENT_HOST
+            value: my-jaeger-agent
+          - name: JAEGER_SAMPLER_TYPE
+            value: const
+          - name: JAEGER_SAMPLER_PARAM
+            value: "1"

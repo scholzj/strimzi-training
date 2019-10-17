@@ -164,3 +164,42 @@ _Note: I do not think changing the timezone of your logs is a good idea, you sho
 * _On your own: Try to set environment variable conflicting with some Strimzi / AMQ Streams variable and see that it is ignored. E.g. `ZOOKEEPER_NODE_COUNT` for Zookeeper container._
 * Once you are finished, you can delete everything
   * `oc delete -f ./`
+
+## Tracing
+
+* Go to the `tracing` directory
+  * `tracing`
+* Install the Jaeger operator
+  * On OCP4, you can use the OperatorHub
+    * Go to the OCP Console, in the menu select Operators / Operator Hub, find Jaeger and install it
+  * On Minishift or Minikube, you can use [OperatorHub.io](https://operatorhub.io/operator/jaeger)
+  * Create a Jaeger instance int he `myproject` namespace
+    * `oc apply -f jaeger.yaml`
+    * Create a TLS Passthrough Route to the `my-jaeger-query` service to be able to access it
+      * Alternatively you can also use port-forward for example.
+* Deploy the source Kafka cluster
+  * `oc apply -f source-kafka.yaml`
+  * Wait for the cluster to be `Ready`
+    * `oc wait kafka/source-cluster --for=condition=Ready --timeout=300s`
+* Deploy the target Kafka cluster
+  * `oc apply -f target-kafka.yaml`
+  * Wait for the cluster to be `Ready`
+    * `oc wait kafka/target-cluster --for=condition=Ready --timeout=300s`
+* Deploy the Mirror Maker
+  * `oc apply -f mirror-maker.yaml`
+  * Check the YAML file you are deploying - notice the tracing variables and the the enabled Jaeger tracing
+  * Wait for the Mirror Maker to be `Ready`
+    * `oc wait kafkamirrormaker/mirror-maker --for=condition=Ready --timeout=300s`
+* Deploy the clients with tracing
+  * `oc apply -f clients.yaml`
+  * Check the YAML for the environment variables configuring the Jaeger tracer
+  * Check the source codes
+    * All source codes are in [https://github.com/strimzi/client-examples](https://github.com/strimzi/client-examples)
+    * Check the file [KafkaProducerExample.java](https://github.com/strimzi/client-examples/blob/09b49a10dfb9cd472d0691cd1a6cf54eefe57ac3/hello-world-producer/src/main/java/KafkaProducerExample.java#L20) to see initialization of the Jaeger Client / Tracer and configuration of the interceptor.
+* Go to the Jaeger UI
+  * List the traces
+    * You should see traces with 4 spans: Producer -> MirrorMaker (in) -> Mirror Maker (out) -> Consumer
+    * Check the latencies and the trace details
+* _On your own: Try tracing with Kafka Connect or Kafka Streams API_
+* Once you are finished, you can delete everything
+  * `oc delete -f ./`

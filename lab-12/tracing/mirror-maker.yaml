@@ -1,0 +1,26 @@
+apiVersion: kafka.strimzi.io/v1beta1
+kind: KafkaMirrorMaker
+metadata:
+  name: mirror-maker
+spec:
+  version: 2.3.0
+  replicas: 1
+  consumer:
+    bootstrapServers: source-cluster-kafka-bootstrap:9092
+    groupId: my-source-group-id
+  producer:
+    bootstrapServers: target-cluster-kafka-bootstrap:9092
+  whitelist: ".*"
+  tracing:
+    type: jaeger
+  template:
+    mirrorMakerContainer:
+      env:
+        - name: JAEGER_SERVICE_NAME
+          value: my-mirror-maker
+        - name: JAEGER_AGENT_HOST
+          value: my-jaeger-agent
+        - name: JAEGER_SAMPLER_TYPE
+          value: const
+        - name: JAEGER_SAMPLER_PARAM
+          value: "1"
