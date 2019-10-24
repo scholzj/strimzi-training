@@ -150,16 +150,16 @@ _Note: I do not think changing the timezone of your logs is a good idea, you sho
     * `oc wait kafka/my-cluster --for=condition=Ready --timeout=300s`
 * Check the logs of all pods
   * All timestamps should be in UTC time
-  * e.g. `oc logs my-cluster-zookeeper-0 -c zookeeper`
+  * e.g. `oc logs my-cluster-kafka-0 -c kafka`
 * Deploy Kafka cluster with Europe / Prague timezone
   * Check the `kafka-prague-timezone.yaml` file and notices how the `TZ` environment variable is configured for every container
   * `oc apply -f kafka-prague-timezone.yaml`
   * Wait for the rolling update to be finished
 * Check the logs of all pods
   * All timestamps should be in UTC time
-  * e.g. `oc logs my-cluster-zookeeper-0 -c zookeeper`
+  * e.g. `oc logs my-cluster-kafka-0 -c kafka`
 * Check that the environment variable is indeed set
-  * `oc exec my-cluster-zookeeper-0 -c zookeeper -- env | grep TZ`
+  * `oc exec my-cluster-kafka-0 -c kafka -- env | grep TZ`
   * You should see `TZ=Europe/Prague`
 * _On your own: Try to set environment variable conflicting with some Strimzi / AMQ Streams variable and see that it is ignored. E.g. `ZOOKEEPER_NODE_COUNT` for Zookeeper container._
 * Once you are finished, you can delete everything
