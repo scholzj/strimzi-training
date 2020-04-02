@@ -73,7 +73,6 @@ sed -i '' 's/namespace: .*/namespace: my-namespace/' 00-install/*RoleBinding*.ya
 ## Custom certificates
 
 * Generate new self-signed certificate:
-  //* `keytool -genkeypair -storetype PKCS12 -keystore server.p12 -dname "CN=MyCustomCert, O=StrimziTraining" -storepass 123456 -keyalg RSA -alias server -ext SAN=dns:*.192.168.64.183.nip.io,ip:127.0.0.1`
   * `keytool -genkeypair -storetype PKCS12 -keystore server.p12 -dname "CN=MyCustomCert, O=StrimziTraining" -storepass 123456 -keyalg RSA -alias server -ext SAN=dns:$(oc get routes -n demo-europe europe-kafka-bootstrap -o jsonpath='{.status.ingress[0].host}'),dns:$(oc get routes -n demo-europe europe-kafka-0 -o jsonpath='{.status.ingress[0].host}')`
   * Replace the DNS name or the IP address with the DNS names or IP address of your server
 * Extract the public and private keys into PEM format
