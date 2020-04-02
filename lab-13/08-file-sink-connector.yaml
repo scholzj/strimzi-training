@@ -1,0 +1,17 @@
+apiVersion: kafka.strimzi.io/v1alpha1
+kind: KafkaConnector
+metadata:
+  name: file-sink-connector
+  namespace: demo-europe
+  labels:
+    strimzi.io/cluster: europe-connect
+spec:
+  class: FileStreamSink
+  tasksMax: 3
+  config:
+    key.converter: org.apache.kafka.connect.storage.StringConverter
+    value.converter: org.apache.kafka.connect.storage.StringConverter
+    key.converter.schemas.enable: false
+    value.converter.schemas.enable: false
+    file: "/tmp/messages.sink.txt"
+    topics: "my-topic,na.my-topic"

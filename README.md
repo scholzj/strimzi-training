@@ -18,7 +18,7 @@ Lab 4 focuses on Role Based Access Control (RBAC). The lab can be found [here](.
 
 ## Lab 5 - Monitoring
 
-Lab 5 focuses on Command line tools, Monitoring and Promethues. The lab can be found [here](./lab-5/).
+Lab 5 focuses on Command line tools, Monitoring and Prometheus. The lab can be found [here](./lab-5/).
 
 ## Lab 6 - Troubleshooting
 
@@ -71,3 +71,14 @@ Lab 12 focuses on changes in Strimzi 0.14.0 / AMQ Streams 1.3.0:
 * Support for Tracing using OpenTracing and Jaeger (Tech Preview)
 
 The lab can be found [here](./lab-12/).
+
+## Lab 13 - What is new in 0.17.0 / AMQ Streams 1.4.0
+
+Lab 13 focuses on changes in Strimzi 0.17.0 / AMQ Streams 1.4.0:
+
+* Mirror Maker 2.0
+* Connector Operator
+* User Quotas
+* Custom Certificates
+
+The lab can be found [here](./lab-13/).
