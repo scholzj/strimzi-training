@@ -135,7 +135,7 @@ oc create secret generic custom-cert \
 
 _Note: the quotas currently do not work with TLS users due to a bug in Strimzi / AMQ Streams. So this demo will not work properly._
 
-* Use the performance test producer to send some messages without any qoutas
+* Use the performance test producer to send some messages without any quotas
 
 ```
 ./kafka/bin/kafka-producer-perf-test.sh \
