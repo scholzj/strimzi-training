@@ -1,0 +1,174 @@
+apiVersion: integreatly.org/v1alpha1
+kind: Grafana
+metadata:
+  name: grafana
+  labels:
+    app: grafana
+  namespace: myproject
+spec:
+  config:
+    log:
+      mode: "console"
+      level: "warn"
+    security:
+      admin_user: "admin"
+      admin_password: "123456"
+    auth:
+      disable_login_form: True
+      disable_signout_menu: True
+    auth.anonymous:
+      enabled: True
+  dashboardLabelSelector:
+    - matchExpressions:
+        - {key: grafana, operator: In, values: [dashabord]}
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: grafana
+  labels:
+    app: grafana
+  namespace: myproject
+spec:
+  type: ClusterIP
+  ports:
+    - name: grafana
+      protocol: TCP
+      port: 80
+      targetPort: grafana-http
+  selector:
+    app: grafana
+---
+
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: grafana
+  labels:
+    app: grafana
+  namespace: myproject
+spec:
+  port:
+    targetPort: grafana
+  to:
+    kind: Service
+    name: grafana
+---
+
+apiVersion: integreatly.org/v1alpha1
+kind: GrafanaDataSource
+metadata:
+  name: prometheus
+  labels:
+    app: grafana
+  namespace: myproject
+spec:
+  name: prometheus.yaml
+  datasources:
+    - name: Prometheus
+      type: prometheus
+      access: proxy
+      url: http://prometheus.myproject.svc:80
+      isDefault: true
+      version: 1
+      editable: true
+      jsonData:
+        tlsSkipVerify: true
+        timeInterval: "5s"
+---
+
+apiVersion: integreatly.org/v1alpha1
+kind: GrafanaDashboard
+metadata: 
+  name: strimzi-zookeeper
+  labels:
+    app: grafana
+    grafana: dashabord
+  namespace: myproject
+spec: 
+  name: strimzi-zookeeper.json
+  url: https://raw.githubusercontent.com/strimzi/strimzi-kafka-operator/master/examples/metrics/grafana-dashboards/strimzi-zookeeper.json
+  datasources:
+    - inputName: "DS_PROMETHEUS"
+      datasourceName: "Prometheus"
+---
+
+apiVersion: integreatly.org/v1alpha1
+kind: GrafanaDashboard
+metadata: 
+  name: strimzi-kafka
+  labels:
+    app: grafana
+    grafana: dashabord
+  namespace: myproject
+spec: 
+  name: strimzi-kafka.json
+  url: https://raw.githubusercontent.com/strimzi/strimzi-kafka-operator/master/examples/metrics/grafana-dashboards/strimzi-kafka.json
+  datasources:
+    - inputName: "DS_PROMETHEUS"
+      datasourceName: "Prometheus"
+---
+
+apiVersion: integreatly.org/v1alpha1
+kind: GrafanaDashboard
+metadata: 
+  name: strimzi-kafka-connect
+  labels:
+    app: grafana
+    grafana: dashabord
+  namespace: myproject
+spec: 
+  name: strimzi-kafka-connect.json
+  url: https://raw.githubusercontent.com/strimzi/strimzi-kafka-operator/master/examples/metrics/grafana-dashboards/strimzi-kafka-connect.json
+  datasources:
+    - inputName: "DS_PROMETHEUS"
+      datasourceName: "Prometheus"
+---
+
+apiVersion: integreatly.org/v1alpha1
+kind: GrafanaDashboard
+metadata: 
+  name: strimzi-kafka-exporter
+  labels:
+    app: grafana
+    grafana: dashabord
+  namespace: myproject
+spec: 
+  name: strimzi-kafka-exporter.json
+  url: https://raw.githubusercontent.com/strimzi/strimzi-kafka-operator/master/examples/metrics/grafana-dashboards/strimzi-kafka-exporter.json
+  datasources:
+    - inputName: "DS_PROMETHEUS"
+      datasourceName: "Prometheus"
+---
+
+apiVersion: integreatly.org/v1alpha1
+kind: GrafanaDashboard
+metadata: 
+  name: strimzi-kafka-mirror-maker-2
+  labels:
+    app: grafana
+    grafana: dashabord
+  namespace: myproject
+spec: 
+  name: strimzi-kafka-mirror-maker-2.json
+  url: https://raw.githubusercontent.com/strimzi/strimzi-kafka-operator/master/examples/metrics/grafana-dashboards/strimzi-kafka-mirror-maker-2.json
+  datasources:
+    - inputName: "DS_PROMETHEUS"
+      datasourceName: "Prometheus"
+---
+
+apiVersion: integreatly.org/v1alpha1
+kind: GrafanaDashboard
+metadata: 
+  name: strimzi-operators
+  labels:
+    app: grafana
+    grafana: dashabord
+  namespace: myproject
+spec: 
+  name: strimzi-operators.json
+  url: https://raw.githubusercontent.com/strimzi/strimzi-kafka-operator/master/examples/metrics/grafana-dashboards/strimzi-operators.json
+  datasources:
+    - inputName: "DS_PROMETHEUS"
+      datasourceName: "Prometheus"

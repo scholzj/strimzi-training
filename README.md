@@ -82,3 +82,13 @@ Lab 13 focuses on changes in Strimzi 0.17.0 / AMQ Streams 1.4.0:
 * Custom Certificates
 
 The lab can be found [here](./lab-13/).
+
+## Lab 14 - What is new in 0.18.0 / AMQ Streams 1.5.0
+
+Lab 14 focuses on changes in Strimzi 0.18.0 / AMQ Streams 1.5.0:
+
+* Improved TLS Configuration
+* Operator Metrics
+* Cluster Balancing / Cruise Control
+
+The lab can be found [here](./lab-14/).
