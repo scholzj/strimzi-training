@@ -17,7 +17,7 @@
 ### On OCP 3.11 or on Kubernetes
 
 * Install the operator:
-  * `kubectl apply -f strimzi-0.18.0`
+  * `kubectl apply -f strimzi-0.18.0/`
 
 ## Improved TLS Configuration
 
@@ -45,11 +45,14 @@
 
 ## Operator Metrics
 
-* Install Prometheus and Grafana
-  * `kubectl apply metrics/prometheus-operator.yaml`
-  * `kubectl apply metrics/prometheus-server.yaml`
-  * `kubectl apply metrics/grafana-operator.yaml`
-  * `kubectl apply metrics/grafana-server.yaml`
+* On OpenShift, install the Grafana and Prometheus operators from Operator Hub and deploy Grafana and Prometheus
+  * `kubectl apply -f metrics/prometheus-server.yaml`
+  * `kubectl apply -f metrics/grafana-server.yaml`
+* On Kubernetes, install the Grafana and Prometheus operators from YAMLs and deploy Grafana and Prometheus
+  * `kubectl apply -f metrics/prometheus-operator.yaml`
+  * `kubectl apply -f metrics/prometheus-server.yaml`
+  * `kubectl apply -f metrics/grafana-operator.yaml`
+  * `kubectl apply -f metrics/grafana-server.yaml`
 * Open the Grafana using the OpenShift Route or using port-forward
   * Check the dashboard with operator metrics
   * Look at the different metrics

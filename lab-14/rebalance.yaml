@@ -11,6 +11,7 @@ spec:
     - DiskCapacityGoal
     - NetworkInboundCapacityGoal
     - NetworkOutboundCapacityGoal
+    - CpuCapacityGoal
     - ReplicaDistributionGoal
     - DiskUsageDistributionGoal
     - NetworkInboundUsageDistributionGoal
