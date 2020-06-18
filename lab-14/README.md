@@ -10,11 +10,12 @@
   * `kubectl create ns myproject`
   * `kubectl config set-context --current --namespace=myproject`
 
-### On OCP4
+### On OCP4 and OCP 3.11 
 
-* Install AMQ Streams 1.5 / Strimzi 0.18.0 from the Operator Hub to watch all namespaces
+* Install the operator:
+  * `kubectl apply -f amq-streams-1.5.0/`
 
-### On OCP 3.11 or on Kubernetes
+### On Kubernetes
 
 * Install the operator:
   * `kubectl apply -f strimzi-0.18.0/`
@@ -45,8 +46,9 @@
 
 ## Operator Metrics
 
-* On OpenShift, install the Grafana and Prometheus operators from Operator Hub and deploy Grafana and Prometheus
+* On OpenShift, install the Prometheus operators from Operator Hub and deploy Grafana and Prometheus
   * `kubectl apply -f metrics/prometheus-server.yaml`
+  * `kubectl apply -f metrics/grafana-operator.yaml`
   * `kubectl apply -f metrics/grafana-server.yaml`
 * On Kubernetes, install the Grafana and Prometheus operators from YAMLs and deploy Grafana and Prometheus
   * `kubectl apply -f metrics/prometheus-operator.yaml`
