@@ -67,6 +67,8 @@
 * Scale the Kafka broker to 3 nodes
   * Edit the Kafka CR with `kubectl edit kafka my-cluster` and set `.spec.kafka.replicas` to 3
   * Wait until the new nodes are started and ready
+* Check the existing topics and notice how they are all on node 0, since they were created when we had only 1 broker
+  * `kubectl exec -ti my-cluster-kafka-0 -c kafka -- bin/kafka-topics.sh --bootstrap-server localhost:9092 --describe`
 * Deploy Cruise Control
   * Edit the Kafka CR with `kubectl edit kafka my-cluster` and add `.spec.cruiseControl` section set to `{}`. E.g.
 ```yaml
@@ -84,8 +86,6 @@ spec:
   cruiseControl: {}
 ```
 
-* Check the existing topics and notice how they are all on node 0, since they were created when we had only 1 broker
-  * `kubectl exec -ti my-cluster-kafka-0 -c kafka -- bin/kafka-topics.sh --bootstrap-server localhost:9092 --describe`
 * Let's get a rebalance proposal from Cruise Control. Check the `KafkaRebalance` resource in [rebalance.yaml](./rebalance.yaml) before applying it and look at the goals.
   * `kubectl apply -f rebalance.yaml`
 * Wait until the proposal status is `ProposalReady`
