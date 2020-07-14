@@ -225,7 +225,7 @@ spec:
 
 * Wait for the update to finish and check that the Entity Operator is now deployed
   * It should contain 2 containers ... the TLS sidecar and the Topic Operator
-* Edit the Kafka resource and add `entityOperator` as in the example below with enabled Topic Operator:
+* Edit the Kafka resource and add `userOperator` as in the example below with enabled Topic Operator:
 
 ```yaml
 apiVersion: kafka.strimzi.io/v1alpha1
