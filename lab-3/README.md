@@ -238,6 +238,7 @@ and
           type: group
           name: connect-cluster
         operation: Read
+
       - resource:
           type: topic
           name: connect-cluster-configs
@@ -250,14 +251,11 @@ and
           type: topic
           name: connect-cluster-configs
         operation: Write
-      - resource:
-          type: topic
-          name: connect-cluster-configs
-        operation: Describe
       - resource:
           type: topic
           name: connect-cluster-configs
         operation: Create
+
       - resource:
           type: topic
           name: connect-cluster-status
@@ -270,14 +268,11 @@ and
           type: topic
           name: connect-cluster-status
         operation: Write
-      - resource:
-          type: topic
-          name: connect-cluster-status
-        operation: Describe
       - resource:
           type: topic
           name: connect-cluster-status
         operation: Create
+
       - resource:
           type: topic
           name: connect-cluster-offsets
@@ -290,10 +285,6 @@ and
           type: topic
           name: connect-cluster-offsets
         operation: Write
-      - resource:
-          type: topic
-          name: connect-cluster-offsets
-        operation: Describe
       - resource:
           type: topic
           name: connect-cluster-offsets
