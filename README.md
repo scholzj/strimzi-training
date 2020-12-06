@@ -92,3 +92,14 @@ Lab 14 focuses on changes in Strimzi 0.18.0 / AMQ Streams 1.5.0:
 * Cluster Balancing / Cruise Control
 
 The lab can be found [here](./lab-14/).
+
+## Lab 15 - What is new in 0.19 + 0.20 / AMQ Streams 1.6.0
+
+Lab 14 focuses on changes in Strimzi 0.18.0 / AMQ Streams 1.5.0:
+
+* New listener configuration
+* Dynamic logging changes
+* Metrics improvements
+* Scale subresource
+
+The lab can be found [here](./lab-15/).
