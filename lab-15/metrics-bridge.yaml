@@ -1,0 +1,76 @@
+apiVersion: kafka.strimzi.io/v1alpha1
+kind: KafkaUser
+metadata:
+  name: my-bridge
+  labels:
+    strimzi.io/cluster: my-cluster
+spec:
+  authentication:
+    type: tls
+---
+
+apiVersion: kafka.strimzi.io/v1alpha1
+kind: KafkaBridge
+metadata:
+  name: my-bridge
+  labels:
+    app: my-bridge
+spec:
+  replicas: 1
+  bootstrapServers: my-cluster-kafka-bootstrap:9093
+  http:
+    port: 8080
+  template:
+    apiService:
+      metadata:
+        labels:
+          discovery.3scale.net: "true"
+        annotations:
+          discovery.3scale.net/scheme: http
+          discovery.3scale.net/port: 8080
+          discovery.3scale.net/path: "/"
+          discovery.3scale.net/description-path: "/openapi"
+  tls:
+    trustedCertificates:
+    - secretName: my-cluster-cluster-ca-cert
+      certificate: ca.crt
+  authentication:
+    type: tls
+    certificateAndKey:
+      secretName: my-bridge
+      certificate: user.crt
+      key: user.key
+  enableMetrics: true
+---
+
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: my-bridge
+  labels:
+    app: my-bridge
+spec:
+  port:
+    targetPort: 8080
+  to:
+    kind: Service
+    name: my-bridge-bridge-service
+    weight: 100
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-bridge
+spec:
+  ports:
+    - name: rest-api
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    strimzi.io/cluster: my-bridge
+    strimzi.io/kind: KafkaBridge
+    strimzi.io/name: my-bridge-bridge
+  type: LoadBalancer
+

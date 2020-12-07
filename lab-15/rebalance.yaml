@@ -1,0 +1,26 @@
+apiVersion: kafka.strimzi.io/v1alpha1
+kind: KafkaRebalance
+metadata:
+  name: my-rebalance
+  labels:
+    strimzi.io/cluster: my-cluster
+spec:
+  goals:
+    - RackAwareGoal
+    - ReplicaCapacityGoal
+    - DiskCapacityGoal
+    - NetworkInboundCapacityGoal
+    - NetworkOutboundCapacityGoal
+    - CpuCapacityGoal
+    - ReplicaDistributionGoal
+    - DiskUsageDistributionGoal
+    - NetworkInboundUsageDistributionGoal
+    - NetworkOutboundUsageDistributionGoal
+    - TopicReplicaDistributionGoal
+    - LeaderReplicaDistributionGoal
+    - LeaderBytesInDistributionGoal
+  excludedTopics: strimzi-canary.*
+  replicationThrottle: 1000000
+  concurrentPartitionMovementsPerBroker: 1
+  concurrentIntraBrokerPartitionMovements: 1
+  concurrentLeaderMovements: 1

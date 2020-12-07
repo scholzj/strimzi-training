@@ -12,7 +12,7 @@
 
 ### On OCP4 and OCP 3.11 
 
-* Install the operator using Operator Hub
+* Install the operator using Operator Hub (as namespaces into the `myproject` namespace)
 * Or install the operator from YAML files:
   * `kubectl apply -f amq-streams-1.6.0/`
 
@@ -24,15 +24,14 @@
 
 ## New Listener configuration
 
-* Enter the `listeners` directory
-  * `cd listeners`
 * Deploy Kafka with an old listener configuration
-  * `kubectl apply -f kafka-old-config.yaml`
+  * `kubectl apply -f listeners-old-config.yaml`
   * In case you are on Kubernetes, you can use `loadbalancer` or `nodeport` listener
   * You can check how the Kafka resource is using the old configuration
 
 * Update the configuration to use the new listeners
-  * `kubectl apply -f kafka-new-configration.yaml` or edit it manually
+  * `kubectl apply -f listeners-new-config.yaml` or edit it manually
+  * There should be no rolling update!
   * Look at the updated YAML and notice the important parts
     * The `name` and `port` values are important for backwards compatibility
     * The `tls` flag is now mandatory
@@ -66,7 +65,7 @@
 * Try to use some of the new features
   * Add second internal listener with TLS encryption and SCRAM-SHA-512 authentication
   * Add second listener using load balancers (if supported in your environment) or node ports
-  * `kubectl apply -f kafka-more-listeners.yaml`
+  * `kubectl apply -f listeners-more-listeners.yaml`
   * Notice the changes to the YAML
 
 ```yaml
@@ -76,7 +75,7 @@
         tls: true
         authentication:
           type: scram-sha-512
-      - name: external
+      - name: external2
         port: 9096
         type: loadbalancer
         tls: true
@@ -86,15 +85,92 @@
 
 ## Dynamic logging changes
 
+### Cluster Operator logging
 
+* Check out the ConfigMap names `strimzi-cluster-operator` and its content
+* Edit it and change the following line:
+```
+rootLogger.level = ${env:STRIMZI_LOG_LEVEL:-INFO}
+```
 
+* to:
+```
+rootLogger.level = ${env:STRIMZI_LOG_LEVEL:-DEBUG}
+```
+
+* Open the operator log and wait for the log level to change:
+  * `kubectl logs deployment/strimzi-cluster-operator -f`
+  * Wait for the DEBUG messages to show up
+  * Notice the pod did not need to restart
+
+_(If you installed the operator using OperatorHub, the config map and pod will be in another namespace (e.g. `openshift-operators`) and might have different name.)_
+
+### Kafka brokers
+
+* We can also dynamically change log levels for Kafka
+  * Edit the Kafka resource
+  * Set the log level for `` to ``
+
+```yaml
+    logging:
+      type: inline
+      loggers:
+        log4j.logger.org.apache.zookeeper: "DEBUG"
+```
+
+* _On your own:_
+  * _Try the same for The Entity Operators, Kafka Connect, HTTP Bridge or for Mirror Maker_
 
 ## Metrics
 
+* On OpenShift, install the Prometheus operators from Operator Hub and deploy Grafana and Prometheus
+  * `kubectl apply -f metrics/prometheus-server.yaml`
+  * `kubectl apply -f metrics/grafana-operator.yaml`
+  * `kubectl apply -f metrics/grafana-server.yaml`
+* On Kubernetes, install the Grafana and Prometheus operators from YAMLs and deploy Grafana and Prometheus
+  * `kubectl apply -f metrics/prometheus-operator.yaml`
+  * `kubectl apply -f metrics/prometheus-server.yaml`
+  * `kubectl apply -f metrics/grafana-operator.yaml`
+  * `kubectl apply -f metrics/grafana-server.yaml`
+* You can access the Prometheus and Grafana UIs using the OpenShift Routes or using port-forward
 
+* Deploy the Kafka clients to generate some load
+  * `kubectl apply -f clients.yaml`
+
+### Resource state metrics
+
+* Exec into the Cluster Operator pod and run the following command
+  * `curl localhost:8080/metrics | grep strimzi_resource_state`
+  * Check the outcome showing the state of the custom resources: 1 => Ready, 0 => Not Ready
+
+```
+sh-4.2$ curl localhost:8080/metrics | grep strimzi_resource_state
+# HELP strimzi_resource_state Current state of the resource: 1 ready, 0 fail
+# TYPE strimzi_resource_state gauge
+strimzi_resource_state{kind="Kafka",name="my-cluster",resource_namespace="myproject",} 1.0
+```
+
+### Bridge metrics
+
+* Deploy bridge with metrics enabled:
+  * `kubectl apply -f metrics-bridge.yaml`
+* Deploy the example HTTP clients
+  * `kubectl apply -f metrics-bridge-clients.yaml`
+* Open the Bridge dashboard in Grafana and check the metrics
+
+### Cruise Control metrics
+
+* Open the Cruise Control dashboard in Grafana and check the metrics
+* Scale the Kafka cluster to 5 replicas
+* Trigger a rebalance
+  * `kubectl apply -f rebalance.yaml`
+* Wait until the rebalance proposal is ready
+* Annotate it to execute the rebalance
+  * `kubectl annotate kafkarebalance my-rebalance strimzi.io/rebalance=approve`
+* Watch in the dashboard the progress
 
 ## Scale sub-resource
 
-
-
-
+* Scale the already deployed Kafka bridge to more replicas
+  * `kubectl scale kafkabridge my-bridge --replicas 3`
+  * Check how the number of replicas in the `my-bridge` resource changed to 3
