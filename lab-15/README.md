@@ -150,6 +150,8 @@ sh-4.2$ curl localhost:8080/metrics | grep strimzi_resource_state
 strimzi_resource_state{kind="Kafka",name="my-cluster",resource_namespace="myproject",} 1.0
 ```
 
+* You can alternatively also check it in the Prometheus UI
+
 ### Bridge metrics
 
 * Deploy bridge with metrics enabled:
