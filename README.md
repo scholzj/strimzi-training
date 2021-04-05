@@ -113,3 +113,15 @@ Lab 16 focuses on changes in Strimzi 0.21 + 0.22 / AMQ Streams 1.7.0 related to 
 * Other Kafka related improvements
 
 The lab can be found [here](./lab-16/).
+
+## Lab 17 - What is new in 0.21 + 0.22 / AMQ Streams 1.7.0: Part 2
+
+Lab 17 focuses on changes in Strimzi 0.21 + 0.22 / AMQ Streams 1.7.0 related to Kafka Connect and Mirror Maker 2:
+
+* Mirror Maker 2 and Offset Synchronization
+* Restarting Connectors
+* Kafka Connect Build
+* Directory Config Provider
+* Used topics in Status
+
+The lab can be found [here](./lab-17/).

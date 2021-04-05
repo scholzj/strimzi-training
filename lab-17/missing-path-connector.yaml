@@ -1,0 +1,12 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: file-sink-connector
+  labels:
+    strimzi.io/cluster: my-connect
+spec:
+  class: FileStreamSink
+  tasksMax: 1
+  config:
+    file: "/tmp/my-path/test.sink.txt"
+    topics: "timer-topic"
