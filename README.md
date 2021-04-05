@@ -95,7 +95,7 @@ The lab can be found [here](./lab-14/).
 
 ## Lab 15 - What is new in 0.19 + 0.20 / AMQ Streams 1.6.0
 
-Lab 14 focuses on changes in Strimzi 0.18.0 / AMQ Streams 1.5.0:
+Lab 15 focuses on changes in Strimzi 0.19 + 0.20 / AMQ Streams 1.6.0:
 
 * New listener configuration
 * Dynamic logging changes
@@ -103,3 +103,13 @@ Lab 14 focuses on changes in Strimzi 0.18.0 / AMQ Streams 1.5.0:
 * Scale subresource
 
 The lab can be found [here](./lab-15/).
+
+## Lab 16 - What is new in 0.21 + 0.22 / AMQ Streams 1.7.0: Part 1
+
+Lab 16 focuses on changes in Strimzi 0.21 + 0.22 / AMQ Streams 1.7.0 related to Kafka, upgrade improvements and CRD changes:
+
+* Upgrade improvements
+* CRD Upgrades
+* Other Kafka related improvements
+
+The lab can be found [here](./lab-16/).
