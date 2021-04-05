@@ -3,7 +3,7 @@
 ## Install cluster operator
 
 * Create namespace/project `myproject` and set it as default.
-* On Openshift 
+* On OpenShift 
   * `oc new-project myproject`
   * `oc project myproject`
 * On Kubernetes
