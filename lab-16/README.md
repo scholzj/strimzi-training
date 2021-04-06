@@ -15,7 +15,7 @@
 * Install Strimzi 0.17 (corresponds to AMQ Streams 1.4.0)
   * `kubectl create -f strimzi-0.17.0/`
 * Deploy the Kafka cluster with Kafka 2.4.0
-  *  `kubectl apply -f kafka.-2.4.0.yaml`
+  *  `kubectl apply -f kafka-2.4.0.yaml`
   * Notice the `.spec.kafka.version` and `log.message.format.version` in `.spec.kafka.config` with the version 2.4.0
 * Once the Kafka cluster is deployed and running, we can upgrade the operator by running these commands
   * `kubectl create -f strimzi-0.22.1/`
