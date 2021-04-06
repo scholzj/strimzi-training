@@ -118,9 +118,9 @@ The lab can be found [here](./lab-16/).
 
 Lab 17 focuses on changes in Strimzi 0.21 + 0.22 / AMQ Streams 1.7.0 related to Kafka Connect and Mirror Maker 2:
 
+* Kafka Connect Build
 * Mirror Maker 2 and Offset Synchronization
 * Restarting Connectors
-* Kafka Connect Build
 * Directory Config Provider
 * Used topics in Status
 

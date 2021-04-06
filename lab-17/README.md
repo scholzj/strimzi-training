@@ -2,29 +2,27 @@
 
 ## Install cluster operator
 
-* Create namespace/project `myproject` and set it as default.
+* Create namespaces / projects `myproject` and `myproject2` and set `myproject` as default.
 * On OpenShift 
   * `oc new-project myproject`
+  * `oc new-project myproject2`
   * `oc project myproject`
 * On Kubernetes
   * `kubectl create ns myproject`
+  * `kubectl create ns myproject2`
   * `kubectl config set-context --current --namespace=myproject`
 
 ### On OCP 4.6 or 4.7
 
-* Install the operator using Operator Hub (as name-spaced into the `myproject` namespace)
-* Or install the operator from YAML files:
+* Install the operator using Operator Hub (as cluster-wide)
+* Or install the operator from YAML files (pre-configured as cluster-wide already):
   * `kubectl create -f strimzi-0.22.1/`
 
 ### On Kubernetes
 
-* Install the operator from [Operator Hub](https://operatorhub.io/operator/strimzi-kafka-operator)
-* Or install the operator from YAML files:
+* Install the operator from [Operator Hub](https://operatorhub.io/operator/strimzi-kafka-operator) as cluster-wide
+* Or install the operator from YAML files (pre-configured as cluster-wide already):
   * `kubectl create -f strimzi-0.22.1/`
-
-## Offset Synchronization
-
-* TODO
 
 ## Kafka Connect Build
 
@@ -46,6 +44,29 @@ _This part is designed to run on OpenShift Container Platform. To run it on Kube
 * _On your own:_
   * _Try to add more connector plugins_
   * _Reconfigure the build to push the images for example to Quay or other container registry_
+
+## Offset Synchronization
+
+* Deploy the second Kafka cluster in the `myproject2` namespace
+  * _On Kubernetes, change the Kafka CR to use for example Load Balancers or Ingress instead of OCP Routes_
+  * `kubectl apply -n myproject2 -f kafka.yaml`
+  * Wait until it is ready
+* Deploy Kafka Mirror Maker 2
+  * `kubectl apply -n myproject2 -f kafka-mirror-maker-2.yaml`
+  * Notice the enabled offset synchronization: `sync.group.offsets.enabled: "true"`
+  * And the modified synchronization intervals to make the lab / demo easier
+* Run consumer on the source cluster:
+  * `kubectl exec my-cluster-kafka-1 -ti -- bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic timer-topic --group my-group`
+  * Notice the last timestamp when you stop the consumer
+* Check the offset for this consumer group on the source cluster
+  * `kubectl exec my-cluster-kafka-1 -ti -- bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092 --group my-group --describe`
+* Now check the offsets on the target cluster
+  * `kubectl exec my-cluster-kafka-1 -n myproject2 -ti -- bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092 --group my-group --describe`
+  * See how the topic was automatically renamed in the offset
+  * Compare the numbers
+* Run consumer on the target cluster:
+  * `kubectl exec my-cluster-kafka-1 -n myproject2 -ti -- bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic my-source-cluster.timer-topic --group my-group`
+  * Check that the consumer continues where it left on the source cluster
 
 ## Restarting annotation
 
