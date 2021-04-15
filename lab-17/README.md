@@ -56,22 +56,23 @@ _This part is designed to run on OpenShift Container Platform. To run it on Kube
   * Notice the enabled offset synchronization: `sync.group.offsets.enabled: "true"`
   * And the modified synchronization intervals to make the lab / demo easier
 * Run consumer on the source cluster:
-  * `kubectl exec my-cluster-kafka-1 -ti -- bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic timer-topic --group my-group`
+  * `kubectl run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.22.1-kafka-2.7.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic timer-topic --group my-group`
   * Notice the last timestamp when you stop the consumer
 * Check the offset for this consumer group on the source cluster
-  * `kubectl exec my-cluster-kafka-1 -ti -- bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092 --group my-group --describe`
+  * `kubectl run kafka-consumer-groups -ti --image=quay.io/strimzi/kafka:0.22.1-kafka-2.7.0 --rm=true --restart=Never -- bin/kafka-consumer-groups.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --group my-group --describe`
 * Now check the offsets on the target cluster
-  * `kubectl exec my-cluster-kafka-1 -n myproject2 -ti -- bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092 --group my-group --describe`
+  * `kubectl run kafka-consumer-groups -ti --image=quay.io/strimzi/kafka:0.22.1-kafka-2.7.0 --rm=true --restart=Never -- bin/kafka-consumer-groups.sh --bootstrap-server my-cluster-kafka-bootstrap.myproject2.svc:9092 --group my-group --describe`
   * See how the topic was automatically renamed in the offset
   * Compare the numbers
 * Run consumer on the target cluster:
-  * `kubectl exec my-cluster-kafka-1 -n myproject2 -ti -- bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic my-source-cluster.timer-topic --group my-group`
+  * `kubectl run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.22.1-kafka-2.7.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap.myproject2.svc:9092 --topic my-source-cluster.timer-topic --group my-group`
   * Check that the consumer continues where it left on the source cluster
 
 ## Restarting annotation
 
 * Check the connector in the [`missing-path-connector.yaml`](./missing-path-connector.yaml) file
   * The path where the connector should write the data does not exist and the connector should fail
+  * Create the connector `kubectl apply -f missing-path-connector.yaml`
 * Double-check that the connector really failed
   * `kubectl get kctr file-sink-connector -o yaml`
   * You should see the connector `RUNNING` but the task as `FAILED`
@@ -124,3 +125,75 @@ _This part is designed to run on OpenShift Container Platform. To run it on Kube
   * Check the [`connector-with-directory-provider.yaml`](./connector-with-directory-provider.yaml) file
   * And apply it `kubectl apply -f connector-with-directory-provider.yaml`
   * Run `kubectl logs deployment/my-connect-connect -f` and check the log level of the messages changed to `ERROR`
+
+## New Topic Operator topics
+
+* Check the new topics used by the Topic Operator
+  * `kubectl get kt`
+
+* _On your own:_
+  * _Check the configuration of these topics also with Kafka APIs (`bin/kafka-topics.sh`, Kafka Admin API or similar)_
+
+## Rolling individual pods
+
+* Annotate one of the Kafka or ZooKeeper pods
+  * For example `kubectl annotate pod my-cluster-kafka-1 strimzi.io/manual-rolling-update=true`
+  * Wait for the next reconciliation to roll the `my-cluster-kafka-1` pod
+
+* _On your own:_
+  * _Annotate multiple pods at the same time and saw how the operators rolls them one by one as with regular rolling update_
+
+## Smaller Kafka improvements
+
+* Check the status of the deployed Kafka cluster
+  * Notice the `clusterId` in the `.status` section
+  * You can also get it programmatically using `kubectl get kafka my-cluster -o jsonpath="{.status.clusterId}"`
+
+* Try to disable the owner reference for the Kafka secrets
+  * Edit the `Kafka` CR with `kubectl edit kafka my-cluster`
+  * Add the following section:
+  ```yaml
+  spec:
+    # ...
+    clusterCa:
+      generateSecretOwnerReference: false
+    clientsCa:
+      generateSecretOwnerReference: false
+  ```
+  * Check the CA secrets (both public and private key secrets) and verify the owner references are gone now
+
+* Add additional labels or annotations to the Kafka cluster public key secret
+  * Edit the `Kafka` CR with `kubectl edit kafka my-cluster`
+  * Add the following section:
+  ```yaml
+  spec:
+    kafka:
+      template:
+        clusterCaCert:
+          metadata:
+            labels:
+              my-key: my-label
+            annotations:
+              my-key: my-anno
+  ```
+  * Check that the label and annotation are set on the `my-cluster-cluster-ca-cert` secret: `kubectl get secret my-cluster-cluster-ca-cert -o yaml`
+
+
+## User Operator improvements
+
+* Edit the Kafka CR and add to the `.spec.entityOperator.userOperator` section new field `secretPrefix`
+  ```yaml
+  # ...
+  entityOperator:
+    # ...
+    userOperator:
+      secretPrefix: kafka-
+  ```
+  * Wait for the User Operator pod to roll
+* Check the `KafkaUser` CR in [`kafka-user.yaml`](./kafka-user.yaml)
+  * Notice the `.spec.template` section
+  * Create the user: `kubectl apply -f kafka-user.yaml`
+* Check the created secret
+  * Notice it is not named `my-user` but `kafka-my-user`
+  * Notice the secret now has the `sasl.jaas.config` key with the JAAS configuration
+  * Notice the labels and annotations from the `.spec.template` section

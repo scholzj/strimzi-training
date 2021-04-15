@@ -110,7 +110,6 @@ Lab 16 focuses on changes in Strimzi 0.21 + 0.22 / AMQ Streams 1.7.0 related to 
 
 * Upgrade improvements
 * CRD Upgrades
-* Other Kafka related improvements
 
 The lab can be found [here](./lab-16/).
 
@@ -123,5 +122,6 @@ Lab 17 focuses on changes in Strimzi 0.21 + 0.22 / AMQ Streams 1.7.0 related to 
 * Restarting Connectors
 * Directory Config Provider
 * Used topics in Status
+* Other Kafka related improvements
 
 The lab can be found [here](./lab-17/).
