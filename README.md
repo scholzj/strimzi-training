@@ -125,3 +125,14 @@ Lab 17 focuses on changes in Strimzi 0.21 + 0.22 / AMQ Streams 1.7.0 related to 
 * Other Kafka related improvements
 
 The lab can be found [here](./lab-17/).
+
+## Lab 18 - What is new in 0.23 + 0.24 / AMQ Streams 1.8.0
+
+Lab 18 focuses on changes in Strimzi 0.23 + 0.24 / AMQ Streams 1.8.0 related to Kafka Connect and Mirror Maker 2:
+
+* Control Plane Listener
+* Reconciliation pausing
+* Kubernetes Configuration Provider
+* Load Balancer finalizers
+
+The lab can be found [here](./lab-18/).
