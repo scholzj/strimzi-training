@@ -35,7 +35,7 @@
   * But the listener is always present
 * Deploy the Kafka cluster:
   ```
-  kubectl apply -f kafka.yaml`
+  kubectl apply -f kafka.yaml
   ```
   * _On Kubernetes, change the YAML to use load balancers, node ports or Ingress instead of Routes_
 * Check the listener for port 9090 and notice that it is configured in the configuration but not used
@@ -52,9 +52,20 @@
               value: +ControlPlaneListener
     ```
   * Or by editing the `Subscription` resource if installed through the Operator Hub
-    ```
-    TODO
-    ```
+    * You can edit it either from CLI
+      ```
+      kubectl edit subscription strimzi-kafka-operator -n openshift-operators
+      ```
+    * Or from the OperatorHub UI (Go to the Strimzi operator / Subscription / Edit Subscription)
+    * Add following YAML to the `Subscription` resource:
+      ```yaml
+      spec:
+        # ...
+        config:
+          env:
+          - name: STRIMZI_FEATURE_GATES
+            value: +ControlPlaneListener
+      ```
 * The CO will restart and afterwards it will roll the Kafka brokers
   * After the rolling update is finished, you can check that the control plane listener is now used
     ```
