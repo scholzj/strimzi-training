@@ -30,7 +30,7 @@ public class Producer {
         props.put("config.providers", "secrets");
         props.put("config.providers.secrets.class", "io.strimzi.kafka.KubernetesSecretConfigProvider");
 
-        props.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "192.168.1.72:31424");
+        props.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "UPDATE-BASED-ON-YOUR-KAFKA-CLUSTER:9092");
 
         props.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
         props.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");

@@ -31,7 +31,7 @@ public class Consumer {
         props.put("config.providers", "secrets");
         props.put("config.providers.secrets.class", "io.strimzi.kafka.KubernetesSecretConfigProvider");
 
-        props.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "192.168.1.72:31424");
+        props.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "UPDATE-BASED-ON-YOUR-KAFKA-CLUSTER:9092");
 
         props.setProperty(ConsumerConfig.GROUP_ID_CONFIG, "my-group");
         props.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
@@ -41,13 +41,13 @@ public class Consumer {
         props.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
 
         props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SSL");
-        
+
         props.put(SslConfigs.SSL_KEYSTORE_TYPE_CONFIG, "PEM");
         props.put(SslConfigs.SSL_KEYSTORE_CERTIFICATE_CHAIN_CONFIG, "${secrets:myproject/my-user:user.crt}");
         props.put(SslConfigs.SSL_KEYSTORE_KEY_CONFIG, "${secrets:myproject/my-user:user.key}");
         props.put(SslConfigs.SSL_TRUSTSTORE_TYPE_CONFIG, "PEM");
         props.put(SslConfigs.SSL_TRUSTSTORE_CERTIFICATES_CONFIG, "${secrets:myproject/my-cluster-cluster-ca-cert:ca.crt}");
-        props.put(SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG, "");
+        props.put(SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG, "HTTPS");
 
         /*
          * Create the consumer and subscribe to topics

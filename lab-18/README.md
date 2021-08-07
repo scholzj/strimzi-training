@@ -47,7 +47,7 @@
 * Enable the `ControlPlaneListener` feature gate:
   * Edit the Cluster Operator (CO) deployment and set the environment variable `FEATURE_GATES` to `+ControlPlaneListener`
   * You can do it either by editing the CO deployment (`kubectl edit deployment strimzi-cluster-operator`) if installed from the YAMLs directly and changing the environment variable:
-    ```
+    ```yaml
             - name: STRIMZI_FEATURE_GATES
               value: +ControlPlaneListener
     ```
@@ -77,7 +77,7 @@
       kubectl wait kafka/my-cluster --for=condition=ReconciliationPaused --timeout=300s
       ```
     * Or check it manually - you should see something like this in the resource status:
-      ```
+      ```yaml
         status:
           conditions:
           - lastTransitionTime: "2021-08-06T19:39:59.196347Z"
@@ -98,7 +98,7 @@
   ```
   * Once unpaused, the operator should restart the Kafka brokers again
   * Once the reconciliation is finished, you can also see that the status is `Ready` again:
-    ```
+    ```yaml
         conditions:
           - lastTransitionTime: "2021-08-06T19:46:23.119Z"
             status: "True"
@@ -107,9 +107,93 @@
 
 ## Kubernetes Configuration provider
 
+### In Kafka Connect
 
+* Deploy Kafka Connect using the [`kafka-connect.yaml`](./kafka-connect.yaml) file
+  ```
+  kubectl apply -f kafka-connect.yaml
+  ```
+  * It deploys Connect with Apache Camel Timer connector and Echo-Sink connector
+  * It also creates topic named `timer-topic` and instance of the Apache Camel Timer connector which will send message every second
+  * Also notice that it initializes the [Kubernetes Configuration Provider for Apache Kafka](https://github.com/strimzi/kafka-kubernetes-config-provider)
+    ```yaml
+    config:
+      # ...
+      config.providers: secrets,configmaps
+      config.providers.secrets.class: io.strimzi.kafka.KubernetesSecretConfigProvider
+      config.providers.configmaps.class: io.strimzi.kafka.KubernetesConfigMapConfigProvider
+    ```
+* Once the Connect cluster is running, we will create additional connector configured from Secret
+  * Check the [`connector.yaml`](./connector.yaml) file and notice
+    * It creates a `Secret` with the connector configuration
+    * It creates `Role` and `RoleBinding` to allow the `Secret` to be read
+      * Notice the `ServiceAccount` used in the `RoleBinding` is the one used by Kafka Connect already
+    * It creates the Echo Sink connector instance which loads the log level from the Secret:
+      ```yaml
+      config:
+        # ...
+        level: ${secrets:myproject/echo-sink-configuration:logLevel}
+      ```
+    * Create the connector by applying the file
+      ```
+      kubectl apply -f connector.yaml
+      ```
+    * Check how the connector gets created and starts printing the messages into the connect log:
+      ```
+      kubectl logs deployment/my-connect-connect -f
+      ```
+    * Also, notice that the Connect deployment was not restarted and other connectors were not disrupted
+* _Using the Kubernetes Configuration Provider to load the log level makes it easy to demo the functionality._
+  _But the main value is of course when using it to load passwords, certificates or API keys._
 
+### In Kafka clients
+
+* Kubernetes Configuration Provider can be also used in clients
+* First, lets create a user `my-user` and topic `my-topic` the clients will use:
+  ```
+  kubectl apply -f kafka-topic.yaml
+  kubectl apply -f kafka-user.yaml
+  ```
+  * Notice that the user uses TLS authentication
+* In your IDE, open the [clients project](./clients/)
+  * Check the `Consumer` and `Producer` classes
+  * Notice how they both initialize the provider:
+    ```java
+    // Initialize the config provider
+    props.put("config.providers", "secrets");
+    props.put("config.providers.secrets.class", "io.strimzi.kafka.KubernetesSecretConfigProvider");
+    ```
+  * And how they use it to configure the Kafka clients using the providers and load the TLS certificates directly from Kubernetes / OpenShift using your login to the cluster.
+    ```java
+    props.put(SslConfigs.SSL_KEYSTORE_TYPE_CONFIG, "PEM");
+    props.put(SslConfigs.SSL_KEYSTORE_CERTIFICATE_CHAIN_CONFIG, "${secrets:myproject/my-user:user.crt}");
+    props.put(SslConfigs.SSL_KEYSTORE_KEY_CONFIG, "${secrets:myproject/my-user:user.key}");
+    props.put(SslConfigs.SSL_TRUSTSTORE_TYPE_CONFIG, "PEM");
+    props.put(SslConfigs.SSL_TRUSTSTORE_CERTIFICATES_CONFIG, "${secrets:myproject/my-cluster-cluster-ca-cert:ca.crt}");
+    ```
+  * Update the bootstrap server to match your Kafka cluster address
+  * Run the `Producer` and `Consumer` to verify they work
 
 ## Load Balancer finalizers
 
+_(Requires a Kubernetes or OpenShift cluster with support for load balancers and for the `service.kubernetes.io/load-balancer-cleanup` annotation. This will typically be the major public clouds.)_
 
+* Edit the Kafka cluster with `kubectl edit kafka my-cluster` and change the external listener to use load balancers and set the finalizers:
+  ```yaml
+  - name: external
+    port: 9094
+    type: loadbalancer
+    tls: true
+    authentication:
+      type: tls
+    configuration:
+      finalizers:
+        - service.kubernetes.io/load-balancer-cleanup
+  ```
+  * Wait for the rolling update to of Kafka cluster to complete
+* Check the load balancer type services with `kubectl get service -o yaml` and verify that the finalizers are set
+* Delete the Kafka cluster with `kubectl delete kafka my-cluster`
+  * What how the services will delete slowly only when the load balancer is actually deleted in the underlying infrastructure
+    ```
+    kubectl get service -w
+    ```

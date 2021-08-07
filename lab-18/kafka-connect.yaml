@@ -1,0 +1,79 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: timer-topic
+  labels:
+    strimzi.io/cluster: my-cluster
+spec:
+  partitions: 1
+  replicas: 3
+---
+
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnect
+metadata:
+  name: my-connect
+  annotations:
+    strimzi.io/use-connector-resources: "true"
+spec:
+  version: 2.7.0
+  replicas: 1
+  bootstrapServers: my-cluster-kafka-bootstrap:9093
+  tls:
+    trustedCertificates:
+      - secretName: my-cluster-cluster-ca-cert
+        certificate: ca.crt
+  config:
+    group.id: connect-cluster
+    offset.storage.topic: connect-cluster-offsets
+    config.storage.topic: connect-cluster-configs
+    status.storage.topic: connect-cluster-status
+    config.storage.replication.factor: -1
+    offset.storage.replication.factor: -1
+    status.storage.replication.factor: -1
+    key.converter: org.apache.kafka.connect.storage.StringConverter
+    value.converter: org.apache.kafka.connect.storage.StringConverter
+    config.providers: secrets,configmaps
+    config.providers.secrets.class: io.strimzi.kafka.KubernetesSecretConfigProvider
+    config.providers.configmaps.class: io.strimzi.kafka.KubernetesConfigMapConfigProvider
+  build:
+    output:
+      type: docker
+      image: image-registry.openshift-image-registry.svc:5000/myproject/my-connect-build:latest
+    plugins:
+      - name: camel-timer-connector
+        artifacts:
+          - type: tgz
+            url: https://repo1.maven.org/maven2/org/apache/camel/kafkaconnector/camel-timer-kafka-connector/0.10.1/camel-timer-kafka-connector-0.10.1-package.tar.gz
+            sha512sum: e2168d6a602ece9aa81b8c9de36aa7d442e872edda611af36b0a7088fcac1a18a29667a076d7f7bbcf3710c3fdc18cce3eb819f38d1b230104a7974ce4841ae9
+      - name: echo-sink-connector
+        artifacts:
+          - type: jar
+            url: https://github.com/scholzj/echo-sink/releases/download/1.2.0/echo-sink-1.2.0.jar
+            sha512sum: d7240e854ee97a266e65716f963ea7559b678aacc428fbee2d3765dd9500020d71878e0b454dece36ca8130e182389a67928ed2af8ebbcd0dfaf4ca364a7fdef
+---
+
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: camel-timer-connector
+  labels:
+    strimzi.io/cluster: my-connect
+spec:
+  class: CamelTimerSourceConnector
+  tasksMax: 1
+  config:
+    topics: timer-topic
+    camel.source.path.timerName: timer
+    key.converter: org.apache.kafka.connect.storage.StringConverter
+    value.converter: org.apache.kafka.connect.json.JsonConverter
+    value.converter.schemas.enable: false
+    transforms: HoistField,InsertField,ReplaceField
+    transforms.HoistField.type: org.apache.kafka.connect.transforms.HoistField$Value
+    transforms.HoistField.field: originalValue
+    transforms.InsertField.type: org.apache.kafka.connect.transforms.InsertField$Value
+    transforms.InsertField.timestamp.field: timestamp
+    transforms.InsertField.static.field: message
+    transforms.InsertField.static.value: "Hello World"
+    transforms.ReplaceField.type: org.apache.kafka.connect.transforms.ReplaceField$Value
+    transforms.ReplaceField.blacklist: originalValue
