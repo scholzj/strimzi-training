@@ -202,7 +202,7 @@ _(Requires a Kubernetes or OpenShift cluster with support for load balancers and
         - service.kubernetes.io/load-balancer-cleanup
   ```
   * Wait for the rolling update to of Kafka cluster to complete
-* Check the load balancer type services with `kubectl get service -o yaml` and verify that the finalizers are set
+* Check the load balancer type services with `kubectl get service my-cluster-kafka-external-bootstrap -o yaml` and verify that the finalizers are set
 * Delete the Kafka cluster with `kubectl delete kafka my-cluster`
   * What how the services will delete slowly only when the load balancer is actually deleted in the underlying infrastructure
     ```
