@@ -1,5 +1,10 @@
 # Strimzi Training
 
+_Note: New sessions for Strimzi can be found in this repository: https://github.com/scholzj/what-is-new-in-strimzi
+New sessions for Red Hat AMQ Streams can be found here: https://github.com/scholzj/what-is-new-in-amq-streams_
+
+_This repository will be archived in the future._
+
 ## Lab 1 - Deploying and using Strimzi
 
 Lab 1 focuses on deploying and using Strimzi. The lab can be found [here](./lab-1/).
